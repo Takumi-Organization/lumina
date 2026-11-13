@@ -3,7 +3,10 @@
 Galería multimedia para Android (Kotlin, Compose, MVVM). Diseño y fases: [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
 
 ## Estado
-Fase 1 hecha: cuadrícula cronológica por días desde MediaStore, miniaturas del sistema, skeleton, estados vacío/sin permiso.
+- Fase 1: cuadrícula cronológica por días desde MediaStore, miniaturas del sistema, skeleton, estados vacío/sin permiso.
+- Fase 2: scrubber temporal (mes/año), selección múltiple (pulsación larga, «elegir día»), favoritos locales + filtro, pellizco para 2–7 columnas, textos en es/en.
+
+Pruebas: `./gradlew :app:testDebugUnitTest` y, con emulador, `ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest` (fijar el serial: si hay un móvil conectado, Gradle intenta instalar también ahí).
 
 ## Probar
 ```

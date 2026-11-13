@@ -7,7 +7,8 @@ import java.time.YearMonth
 sealed interface TimelineEntry {
     val key: String
 
-    data class Header(val day: LocalDate, val count: Int) : TimelineEntry {
+    data class Header(val day: LocalDate, val ids: List<Long>) : TimelineEntry {
+        val count get() = ids.size
         override val key get() = "h$day"
     }
 

@@ -4,7 +4,6 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.database.ContentObserver
 import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
@@ -34,7 +33,6 @@ class MediaStoreSource(private val resolver: ContentResolver) : MediaRepository 
     }.conflate().map { withContext(Dispatchers.IO) { query() } }
 
     private fun query(): List<MediaItem> {
-        val fav = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
         val projection = buildList {
             add(MediaStore.Files.FileColumns._ID)
             add(MediaStore.Files.FileColumns.DISPLAY_NAME)
@@ -48,7 +46,6 @@ class MediaStoreSource(private val resolver: ContentResolver) : MediaRepository 
             add(MediaStore.Files.FileColumns.SIZE)
             add(MediaStore.Files.FileColumns.BUCKET_DISPLAY_NAME)
             add(MediaStore.Files.FileColumns.RELATIVE_PATH)
-            if (fav) add(MediaStore.Files.FileColumns.IS_FAVORITE)
         }.toTypedArray()
         val selection = "${MediaStore.Files.FileColumns.MEDIA_TYPE} IN (?, ?)"
         val args = arrayOf(
@@ -69,7 +66,6 @@ class MediaStoreSource(private val resolver: ContentResolver) : MediaRepository 
             val iSize = c.getColumnIndexOrThrow(projection[9])
             val iBucket = c.getColumnIndexOrThrow(projection[10])
             val iPath = c.getColumnIndexOrThrow(projection[11])
-            val iFav = if (fav) c.getColumnIndexOrThrow(projection[12]) else -1
             while (c.moveToNext()) {
                 val id = c.getLong(iId)
                 val video = c.getInt(iType) == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
@@ -89,7 +85,7 @@ class MediaStoreSource(private val resolver: ContentResolver) : MediaRepository 
                     sizeBytes = c.getLong(iSize),
                     bucketName = c.getString(iBucket).orEmpty(),
                     relativePath = c.getString(iPath).orEmpty(),
-                    isFavorite = iFav >= 0 && c.getInt(iFav) == 1,
+                    isFavorite = false, // los favoritos son de Lumina (FavoritesRepository)
                 )
             }
         }

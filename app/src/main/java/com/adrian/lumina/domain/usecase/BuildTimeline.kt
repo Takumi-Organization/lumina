@@ -27,8 +27,9 @@ fun buildTimeline(items: List<MediaItem>, zone: ZoneId = ZoneId.systemDefault())
             months += MonthMark(month, entries.size, 0)
         }
         months[months.lastIndex] = months.last().let { it.copy(count = it.count + group.size) }
-        entries += TimelineEntry.Header(day, group.size)
-        group.sortedByDescending { it.dateMillis }.forEach { entries += TimelineEntry.Cell(it) }
+        val sorted = group.sortedByDescending { it.dateMillis }
+        entries += TimelineEntry.Header(day, sorted.map { it.id })
+        sorted.forEach { entries += TimelineEntry.Cell(it) }
     }
     return Timeline(entries, months)
 }

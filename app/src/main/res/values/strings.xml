@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">Lumina</string>
+    <string name="today">Hoy</string>
+    <string name="yesterday">Ayer</string>
+    <string name="title_favorites">Favoritas</string>
+    <string name="filter_only_favorites">Solo favoritas</string>
+    <string name="filter_show_all">Mostrar todo</string>
+    <string name="favorite">Favorita</string>
+    <string name="add_to_favorites">Añadir a favoritas</string>
+    <string name="remove_from_favorites">Quitar de favoritas</string>
+    <string name="cancel_selection">Cancelar selección</string>
+    <string name="select_day">Elegir día</string>
+    <string name="deselect_day">Quitar día</string>
+    <plurals name="selected_count">
+        <item quantity="one">%d seleccionada</item>
+        <item quantity="other">%d seleccionadas</item>
+    </plurals>
+    <string name="empty_library_title">Aún no hay nada que revelar</string>
+    <string name="empty_library_body">Cuando hagas fotos o grabes vídeos aparecerán aquí, ordenados por fecha.</string>
+    <string name="empty_favorites_title">Todavía no hay favoritas</string>
+    <string name="empty_favorites_body">Mantén pulsada una foto y toca el corazón para guardarla aquí.</string>
+    <string name="permission_title">Lumina necesita ver tus fotos</string>
+    <string name="permission_body">Todo se queda en tu dispositivo. Solo leemos los medios para mostrártelos; no se sube nada.</string>
+    <string name="permission_action">Dar acceso</string>
 </resources>

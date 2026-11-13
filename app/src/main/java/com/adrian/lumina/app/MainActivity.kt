@@ -15,12 +15,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.adrian.lumina.R
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.adrian.lumina.ui.components.EmptyState
+import com.adrian.lumina.ui.gallery.GalleryActions
 import com.adrian.lumina.ui.gallery.GalleryScreen
 import com.adrian.lumina.ui.gallery.GalleryViewModel
 import com.adrian.lumina.ui.theme.LuminaTheme
@@ -34,10 +37,21 @@ class MainActivity : ComponentActivity() {
             LuminaTheme {
                 PermissionGate {
                     val vm: GalleryViewModel = viewModel(
-                        factory = viewModelFactory { initializer { GalleryViewModel(container.media) } }
+                        factory = viewModelFactory { initializer { GalleryViewModel(container.media, container.favorites) } }
                     )
                     val state by vm.state.collectAsStateWithLifecycle()
-                    GalleryScreen(state)
+                    val selection by vm.selection.collectAsStateWithLifecycle()
+                    val columns by vm.columns.collectAsStateWithLifecycle()
+                    val favoritesOnly by vm.favoritesOnly.collectAsStateWithLifecycle()
+                    GalleryScreen(
+                        state = state, selection = selection, columns = columns, favoritesOnly = favoritesOnly,
+                        allSelectedFavorite = selection.isNotEmpty() && vm.allSelectedAreFavorite(),
+                        actions = GalleryActions(
+                            onToggle = vm::toggle, onToggleDay = vm::toggleGroup,
+                            onClearSelection = vm::clearSelection, onFavoriteSelected = vm::toggleFavoriteOfSelection,
+                            onFavoritesOnly = vm::setFavoritesOnly, onColumns = vm::setColumns,
+                        ),
+                    )
                 }
             }
         }
@@ -72,9 +86,9 @@ private fun PermissionGate(content: @Composable () -> Unit) {
         allowed = hasAccess(context)
     }
     if (allowed) content() else EmptyState(
-        title = "Lumina necesita ver tus fotos",
-        body = "Todo se queda en tu dispositivo. Solo leemos los medios para mostrártelos; no se sube nada.",
-        actionLabel = "Dar acceso",
+        title = stringResource(R.string.permission_title),
+        body = stringResource(R.string.permission_body),
+        actionLabel = stringResource(R.string.permission_action),
         onAction = { launcher.launch(mediaPermissions()) },
     )
 }

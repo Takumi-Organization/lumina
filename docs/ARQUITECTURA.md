@@ -11,7 +11,7 @@ Galería multimedia para Android. Kotlin + Compose + MVVM. Un solo módulo Gradl
 | Lista grande | `MediaStore` consultado paginado → `Flow<List>` en memoria con claves estables (`MediaStore.Files._ID`), agrupado por fecha en dominio; `LazyVerticalGrid` con claves. | Sin Paging 3 inicialmente: la consulta de solo metadatos de 50 k filas cabe en memoria (~10 MB). Se reevalúa si se mide lo contrario. |
 | Borrar / modificar | `MediaStore.createDeleteRequest` / `createWriteRequest` (API 30+); `RecoverableSecurityException` en API 29. | Único camino permitido a medios de otras apps. |
 | Guardar ediciones | Copia nueva en `Pictures/Lumina` vía `MediaStore.insert` (sin permiso en API 29+). Nunca sobrescribe el original. | Cumple «guardar copia» y es seguro. |
-| Favoritos | `MediaStore.MediaColumns.IS_FAVORITE` (API 30+) **y** tabla Room local (espejo) para API 29 y para ítems que no podamos modificar. | Mantener compatibilidad sin falsear. |
+| Favoritos | **Solo locales (Room, tabla `favorite`)**. No se escribe `IS_FAVORITE` del sistema. | `MediaStore.createFavoriteRequest` exige un diálogo de confirmación del sistema en cada acción; inviable para marcar en lote con fluidez. Coste: no se sincroniza con los favoritos de otras apps. |
 | Álbumes manuales | Solo Room (`album`, `album_item`): referencias `mediaId`, no copias. | No mover/duplicar archivos del usuario. |
 | Ubicación EXIF | Requiere `ACCESS_MEDIA_LOCATION` (opcional, se pide solo al abrir «información»). `MediaStore.setRequireOriginal`. | Android redacta el GPS si no. |
 | Reconocimiento IA | **No se implementa.** Interfaz `SearchProvider` con implementación de metadatos; un futuro `MlSearchProvider` se enchufa sin tocar la UI. | Pedido explícito: no simular. |
