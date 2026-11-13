@@ -61,10 +61,10 @@ fun AlbumPickerDialog(albums: List<Album>, onDismiss: () -> Unit, onPick: (Long)
 }
 
 @Composable
-fun ConfirmDialog(title: String, body: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+fun ConfirmDialog(title: String, body: String, onDismiss: () -> Unit, confirmLabel: String = stringResource(R.string.delete), onConfirm: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss, title = { Text(title) }, text = { Text(body) },
-        confirmButton = { TextButton(onConfirm) { Text(stringResource(R.string.delete)) } },
+        confirmButton = { TextButton(onConfirm) { Text(confirmLabel) } },
         dismissButton = { TextButton(onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }

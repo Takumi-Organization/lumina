@@ -1,0 +1,34 @@
+<resources>
+    <string name="edit">Editar</string>
+    <string name="adj_exposure">Exposición</string>
+    <string name="adj_contrast">Contraste</string>
+    <string name="adj_saturation">Saturación</string>
+    <string name="adj_warmth">Temperatura</string>
+    <string name="adj_shadows">Sombras</string>
+    <string name="adj_highlights">Luces</string>
+    <string name="adj_sharpen">Nitidez</string>
+    <string name="adj_vignette">Viñeta</string>
+    <string name="crop_original">Original</string>
+    <string name="crop_square">1:1</string>
+    <string name="crop_4_3">4:3</string>
+    <string name="crop_3_4">3:4</string>
+    <string name="crop_16_9">16:9</string>
+    <string name="crop_9_16">9:16</string>
+    <string name="editor_tab_adjust">Ajustes</string>
+    <string name="editor_tab_crop">Recortar y girar</string>
+    <string name="editor_undo">Deshacer</string>
+    <string name="editor_redo">Rehacer</string>
+    <string name="editor_reset">Restablecer</string>
+    <string name="editor_save_copy">Guardar copia</string>
+    <string name="editor_saved">Copia guardada en Pictures/Lumina</string>
+    <string name="editor_save_failed">No se pudo guardar la copia</string>
+    <string name="editor_load_failed">No se pudo abrir la imagen</string>
+    <string name="editor_original">Original</string>
+    <string name="editor_compare_hint">Mantén pulsada la imagen para ver el original</string>
+    <string name="editor_rotate_left">Girar a la izquierda</string>
+    <string name="editor_rotate_right">Girar a la derecha</string>
+    <string name="editor_flip">Espejo</string>
+    <string name="editor_discard_title">¿Descartar los cambios?</string>
+    <string name="editor_discard_body">Las ediciones no guardadas se perderán. El original no se modifica.</string>
+    <string name="editor_discard">Descartar</string>
+</resources>

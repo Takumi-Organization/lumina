@@ -7,6 +7,7 @@ import com.adrian.lumina.data.db.MIGRATION_1_2
 import com.adrian.lumina.data.db.RoomAlbums
 import com.adrian.lumina.data.db.RoomFavorites
 import com.adrian.lumina.data.media.ExifReader
+import com.adrian.lumina.data.media.ImageCodec
 import com.adrian.lumina.data.media.MediaActions
 import com.adrian.lumina.data.media.MediaStoreSource
 import com.adrian.lumina.domain.repository.AlbumRepository
@@ -21,4 +22,5 @@ class AppContainer(context: Context) {
     val albums: AlbumRepository = RoomAlbums(db.albums())
     val actions = MediaActions(context)
     val exif = ExifReader(context)
+    val images = ImageCodec(context)
 }

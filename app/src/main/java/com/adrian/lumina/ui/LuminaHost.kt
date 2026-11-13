@@ -52,6 +52,8 @@ import com.adrian.lumina.ui.albums.AlbumPickerDialog
 import com.adrian.lumina.ui.albums.AlbumsScreen
 import com.adrian.lumina.ui.albums.AlbumsViewModel
 import com.adrian.lumina.ui.albums.ConfirmDialog
+import com.adrian.lumina.ui.editor.EditorScreen
+import com.adrian.lumina.ui.editor.EditorViewModel
 import com.adrian.lumina.domain.model.MediaItem
 import com.adrian.lumina.domain.model.TimelineEntry
 import com.adrian.lumina.ui.components.LocalSharedScopes
@@ -95,6 +97,7 @@ fun LuminaHost(container: AppContainer) {
     val albumSelection by albumsVm.selection.collectAsStateWithLifecycle()
     val albumSort by albumsVm.sort.collectAsStateWithLifecycle()
     var section by rememberSaveable { mutableStateOf(Section.LIBRARY) }
+    var editing by remember { mutableStateOf<MediaItem?>(null) }
     var dialog by remember { mutableStateOf<AlbumDialog?>(null) }
 
     val timeline = (state as? GalleryUiState.Content)?.timeline
@@ -149,6 +152,7 @@ fun LuminaHost(container: AppContainer) {
         null -> {}
     }
 
+    Box(Modifier.fillMaxSize()) {
     SharedTransitionLayout {
         AnimatedContent(
             targetState = viewerId != null,
@@ -214,6 +218,7 @@ fun LuminaHost(container: AppContainer) {
                         onToggleFavorite = vm::toggleFavorite,
                         onShare = { share(listOf(it)) },
                         onDelete = { trash(listOf(it)) },
+                        onEdit = { editing = it },
                         locationGranted = locationGranted,
                         onRequestLocation = { locationLauncher.launch(Manifest.permission.ACCESS_MEDIA_LOCATION) },
                         loadExif = container.exif::read,
@@ -221,5 +226,13 @@ fun LuminaHost(container: AppContainer) {
                 }
             }
         }
+    }
+    editing?.let { item ->
+        val editorVm: EditorViewModel = viewModel(
+            key = "editor-${item.id}",
+            factory = viewModelFactory { initializer { EditorViewModel(item, container.images) } },
+        )
+        EditorScreen(editorVm, onClose = { editing = null })
+    }
     }
 }

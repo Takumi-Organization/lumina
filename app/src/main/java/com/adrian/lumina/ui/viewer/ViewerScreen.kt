@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Info
@@ -85,6 +86,7 @@ fun ViewerScreen(
     onToggleFavorite: (MediaItem) -> Unit,
     onShare: (MediaItem) -> Unit,
     onDelete: (MediaItem) -> Unit,
+    onEdit: ((MediaItem) -> Unit)? = null,
     autoPlayVideos: Boolean = false,
     autoHideChromeMs: Long = CHROME_HIDE_MS,
     locationGranted: Boolean,
@@ -147,6 +149,7 @@ fun ViewerScreen(
                     onShare = { onShare(current) },
                     onInfo = { showInfo = true },
                     onDelete = { onDelete(current) },
+                    onEdit = if (onEdit != null && !current.isVideo) ({ onEdit(current) }) else null,
                 )
             }
         }
@@ -221,7 +224,7 @@ private fun TopBar(item: MediaItem, index: Int, total: Int, onClose: () -> Unit)
 }
 
 @Composable
-private fun BottomBar(favorite: Boolean, onFavorite: () -> Unit, onShare: () -> Unit, onInfo: () -> Unit, onDelete: () -> Unit) {
+private fun BottomBar(favorite: Boolean, onFavorite: () -> Unit, onShare: () -> Unit, onInfo: () -> Unit, onDelete: () -> Unit, onEdit: (() -> Unit)? = null) {
     Row(
         Modifier.fillMaxWidth().background(Color(0x8C000000)).navigationBarsPadding().padding(vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -235,6 +238,9 @@ private fun BottomBar(favorite: Boolean, onFavorite: () -> Unit, onShare: () -> 
                 stringResource(if (favorite) R.string.remove_from_favorites else R.string.add_to_favorites),
                 tint = if (favorite) MaterialTheme.colorScheme.primary else Color.White,
             )
+        }
+        if (onEdit != null) IconButton(onClick = onEdit, modifier = Modifier.testTag("viewer-edit")) {
+            Icon(Icons.Rounded.Edit, stringResource(R.string.edit), tint = Color.White)
         }
         IconButton(onClick = onInfo, modifier = Modifier.testTag("viewer-info")) {
             Icon(Icons.Rounded.Info, stringResource(R.string.info), tint = Color.White)
