@@ -27,9 +27,10 @@ interface FavoriteDao {
     suspend fun delete(ids: List<Long>)
 }
 
-@Database(entities = [FavoriteEntity::class], version = 1, exportSchema = true)
+@Database(entities = [FavoriteEntity::class, AlbumEntity::class, AlbumItemEntity::class], version = 2, exportSchema = true)
 abstract class LuminaDatabase : RoomDatabase() {
     abstract fun favorites(): FavoriteDao
+    abstract fun albums(): AlbumDao
 }
 
 class RoomFavorites(private val dao: FavoriteDao) : FavoritesRepository {

@@ -1,0 +1,41 @@
+<resources>
+    <string name="tab_library">Biblioteca</string>
+    <string name="tab_albums">Álbumes</string>
+    <string name="albums_mine">Mis álbumes</string>
+    <string name="albums_smart">Automáticos</string>
+    <string name="albums_folders">Carpetas del dispositivo</string>
+    <string name="albums_none">Aún no has creado ninguno. Toca + para empezar.</string>
+    <string name="albums_show_hidden">Mostrar álbumes ocultos</string>
+    <string name="albums_hide_hidden">Ocultar álbumes ocultos</string>
+    <string name="smart_recent">Recientes</string>
+    <string name="smart_camera">Cámara</string>
+    <string name="smart_screenshots">Capturas</string>
+    <string name="smart_downloads">Descargas</string>
+    <string name="smart_photos">Fotos</string>
+    <string name="smart_videos">Vídeos</string>
+    <string name="smart_favorites">Favoritas</string>
+    <plurals name="items_count">
+        <item quantity="one">%d elemento</item>
+        <item quantity="other">%d elementos</item>
+    </plurals>
+    <string name="album_new">Nuevo álbum</string>
+    <string name="album_edit">Editar álbum</string>
+    <string name="album_name">Nombre</string>
+    <string name="album_description">Descripción</string>
+    <string name="album_add_to">Añadir al álbum</string>
+    <string name="album_hide">Ocultar álbum</string>
+    <string name="album_unhide">Mostrar álbum</string>
+    <string name="album_delete">Eliminar álbum</string>
+    <string name="album_delete_body">Se borra el álbum, no las fotos ni los vídeos.</string>
+    <string name="album_remove_items">Quitar del álbum</string>
+    <string name="album_set_cover">Usar como portada</string>
+    <string name="album_move_earlier">Mover antes</string>
+    <string name="album_move_later">Mover después</string>
+    <string name="sort_title">Ordenar</string>
+    <string name="sort_manual">Manual</string>
+    <string name="sort_date_desc">Más recientes primero</string>
+    <string name="sort_date_asc">Más antiguas primero</string>
+    <string name="sort_name">Nombre</string>
+    <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+</resources>

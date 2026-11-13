@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.PhotoAlbum
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Share
@@ -64,6 +65,7 @@ class GalleryActions(
     val onOpen: (Long) -> Unit = {},
     val onShareSelected: () -> Unit = {},
     val onDeleteSelected: () -> Unit = {},
+    val onAddToAlbum: () -> Unit = {},
 )
 
 private val TopInset = 104.dp
@@ -152,6 +154,9 @@ private fun SelectionBar(count: Int, allFavorite: Boolean, actions: GalleryActio
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f).testTag("selection-count"),
         )
+        IconButton(onClick = actions.onAddToAlbum, modifier = Modifier.testTag("selection-album")) {
+            Icon(Icons.Rounded.PhotoAlbum, stringResource(R.string.album_add_to))
+        }
         IconButton(onClick = actions.onShareSelected, modifier = Modifier.testTag("selection-share")) {
             Icon(Icons.Rounded.Share, stringResource(R.string.share))
         }

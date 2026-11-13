@@ -2,6 +2,8 @@ package com.adrian.lumina
 
 import com.adrian.lumina.domain.model.MediaItem
 import com.adrian.lumina.domain.model.MediaKind
+import com.adrian.lumina.domain.model.AlbumSort
+import com.adrian.lumina.domain.model.SmartType
 import com.adrian.lumina.domain.model.TimelineEntry
 import com.adrian.lumina.domain.usecase.*
 import java.time.LocalDate
@@ -121,5 +123,56 @@ class ClockTest {
     @Test fun progress() {
         assertEquals(0.5f, progressFraction(30, 60), 0f); assertEquals(0f, progressFraction(5, 0), 0f)
         assertEquals(1f, progressFraction(90, 60), 0f)
+    }
+}
+
+class SmartAlbumsTest {
+    private val now = 1_700_000_000_000L
+    private val day = 86_400_000L
+    private fun m(id: Long, path: String, name: String = "$id.jpg", video: Boolean = false, ageDays: Long = 1, fav: Boolean = false) =
+        MediaItem(id, "u$id", name, if (video) MediaKind.VIDEO else MediaKind.IMAGE, now - ageDays * day, 1, 1, 0, 1, "b", path, fav)
+    private val items = listOf(
+        m(1, "DCIM/Camera/", ageDays = 2), m(2, "Pictures/Screenshots/", "Screenshot_1.png", ageDays = 40),
+        m(3, "Download/", "doc.jpg", ageDays = 5), m(4, "DCIM/Camera/", "V.mp4", video = true, ageDays = 100),
+        m(5, "Pictures/Memes/", ageDays = 10, fav = true), m(6, "Movies/", "clip.mp4", video = true, ageDays = 1),
+        m(7, "DCIM/", "Captura_2.png", ageDays = 3),
+    )
+    private fun ids(t: SmartType) = smartAlbumItems(t, items, now).map { it.id }
+
+    @Test fun recent() = assertEquals(listOf(6L, 1L, 7L, 3L, 5L), ids(SmartType.RECENT)) // ≤30 días, nuevos primero
+    @Test fun camera() = assertEquals(listOf(1L, 4L), ids(SmartType.CAMERA))
+    @Test fun screenshots() = assertEquals(setOf(2L, 7L), ids(SmartType.SCREENSHOTS).toSet())
+    @Test fun downloads() = assertEquals(listOf(3L), ids(SmartType.DOWNLOADS))
+    @Test fun photosExcludeVideosAndScreenshots() = assertEquals(setOf(1L, 3L, 5L), ids(SmartType.PHOTOS).toSet())
+    @Test fun videos() = assertEquals(setOf(4L, 6L), ids(SmartType.VIDEOS).toSet())
+    @Test fun favorites() = assertEquals(listOf(5L), ids(SmartType.FAVORITES))
+
+    @Test fun foldersGroupedBySizeThenName() {
+        val f = folderAlbums(items)
+        assertEquals("Camera", f.first().name); assertEquals(2, f.first().items.size)
+        assertEquals(setOf("Camera", "Screenshots", "Download", "Memes", "Movies", "DCIM"), f.map { it.name }.toSet())
+    }
+
+    @Test fun sorts() {
+        val a = listOf(m(1, "p", "b.jpg", ageDays = 5), m(2, "p", "A.jpg", ageDays = 1), m(3, "p", "c.jpg", ageDays = 9))
+        assertEquals(listOf(1L, 2L, 3L), sortItems(a, AlbumSort.MANUAL).map { it.id })
+        assertEquals(listOf(2L, 1L, 3L), sortItems(a, AlbumSort.DATE_DESC).map { it.id })
+        assertEquals(listOf(3L, 1L, 2L), sortItems(a, AlbumSort.DATE_ASC).map { it.id })
+        assertEquals(listOf(2L, 1L, 3L), sortItems(a, AlbumSort.NAME).map { it.id })
+    }
+
+    @Test fun moveOne() {
+        assertEquals(listOf(2L, 1L, 3L, 4L), moveId(listOf(1, 2, 3, 4), 2, -1))
+        assertEquals(listOf(1L, 2L, 4L, 3L), moveId(listOf(1, 2, 3, 4), 3, 1))
+        assertEquals(listOf(1L, 2L, 3L), moveId(listOf(1, 2, 3), 1, -1))   // en el borde: sin cambios
+        assertEquals(listOf(1L, 2L, 3L), moveId(listOf(1, 2, 3), 9, 1))    // inexistente
+        assertEquals(listOf(3L, 1L, 2L), moveId(listOf(1, 2, 3), 3, -9))   // acotado
+    }
+
+    @Test fun moveBlock() {
+        assertEquals(listOf(2L, 3L, 1L, 4L, 5L), moveIds(listOf(1, 2, 3, 4, 5), setOf(2L, 3L), -1))
+        assertEquals(listOf(1L, 4L, 2L, 3L, 5L), moveIds(listOf(1, 2, 3, 4, 5), setOf(2L, 3L), 1))
+        assertEquals(listOf(1L, 2L, 3L, 4L), moveIds(listOf(1, 2, 3, 4), setOf(1L, 2L), -1)) // bloque pegado al borde
+        assertEquals(listOf(1L, 2L, 4L, 3L), moveIds(listOf(1, 2, 3, 4), setOf(3L), 1))
     }
 }

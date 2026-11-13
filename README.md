@@ -7,6 +7,9 @@ Galería multimedia para Android (Kotlin, Compose, MVVM). Diseño y fases: [docs
 - Fase 2: scrubber temporal (mes/año), selección múltiple (pulsación larga, «elegir día»), favoritos locales + filtro, pellizco para 2–7 columnas, textos en es/en.
 - Fase 3: visor (paginador, zoom con pellizco/doble toque, transición compartida, controles que se ocultan, información EXIF y ubicación, compartir, papelera del sistema, favoritos). Vídeo: póster + reproductor del sistema (provisional hasta la fase 4).
 - Fase 4: vídeo integrado (Media3 ExoPlayer): reproducir/pausa, progreso, volumen/silencio, doble toque ±10 s, girar a horizontal (modo inmersivo). Pendiente de revisión visual en horizontal.
+- Fase 5: álbumes. Manuales (Room v2, migración 1→2): crear/editar nombre y descripción, portada, favoritos, ocultos, añadir desde la selección, quitar, reordenar y orden Manual/fecha/nombre. Automáticos (recientes, cámara, capturas, descargas, fotos, vídeos, favoritas) y carpetas del dispositivo. Pestañas Biblioteca/Álbumes.
+
+Estado de verificación: ver «Verificación» al final.
 
 Pruebas: `./gradlew :app:testDebugUnitTest` y, con emulador, `ANDROID_SERIAL=emulator-5556 ./gradlew :app:connectedDebugAndroidTest` (fijar el serial: si hay un móvil conectado, Gradle intenta instalar también ahí).
 
