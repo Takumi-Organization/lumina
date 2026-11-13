@@ -89,6 +89,8 @@ fun EditorScreen(vm: EditorViewModel, onClose: () -> Unit, modifier: Modifier = 
     val context = LocalContext.current
     val close = { vm.release(); onClose() }
 
+    LaunchedEffect(tab) { vm.cropMode.value = tab == 1 }
+
     BackHandler { if (vm.hasChanges) confirmDiscard = true else close() }
     LaunchedEffect(save) {
         when (save) {
@@ -130,6 +132,10 @@ fun EditorScreen(vm: EditorViewModel, onClose: () -> Unit, modifier: Modifier = 
                 shown == null -> CircularProgressIndicator(strokeWidth = 2.dp)
                 else -> Image(shown.asImageBitmap(), null, Modifier.fillMaxSize().padding(8.dp), contentScale = ContentScale.Fit)
             }
+            if (tab == 1 && shown != null && !comparing) CropOverlay(
+                state.crop, shown.width.toFloat() / shown.height, MaterialTheme.colorScheme.primary,
+                onChange = vm::cropDraft, onEnd = vm::commitDraft, modifier = Modifier.padding(8.dp),
+            )
             if (comparing) Text(
                 stringResource(R.string.editor_original), color = Color.White,
                 modifier = Modifier.align(Alignment.TopCenter).padding(8.dp).background(Color(0x99000000)).padding(horizontal = 10.dp, vertical = 4.dp),

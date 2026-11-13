@@ -3,6 +3,9 @@ package com.adrian.lumina.ui.albums
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,6 +20,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
@@ -73,7 +77,7 @@ fun AlbumDetailScreen(
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             modifier = Modifier.fillMaxSize().navigationBarsPadding().testTag("album-grid"),
-            contentPadding = PaddingValues(top = 72.dp, bottom = 24.dp, start = 2.dp, end = 2.dp),
+            contentPadding = PaddingValues(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 72.dp, bottom = 24.dp, start = 2.dp, end = 2.dp),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
@@ -112,7 +116,7 @@ private fun TopBar(detail: AlbumDetail, sort: AlbumSort, actions: AlbumDetailAct
             Text(sub, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
         }
         Box {
-            IconButton(onClick = { sortMenu = true }, modifier = Modifier.testTag("album-sort")) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.sort_title)) }
+            IconButton(onClick = { sortMenu = true }, modifier = Modifier.testTag("album-sort")) { Icon(Icons.AutoMirrored.Rounded.Sort, stringResource(R.string.sort_title)) }
             DropdownMenu(sortMenu, { sortMenu = false }) {
                 AlbumSort.entries.forEach { s ->
                     DropdownMenuItem(

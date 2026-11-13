@@ -14,8 +14,9 @@ object EditPipeline {
 
     fun apply(src: PixelImage, s: EditState): PixelImage {
         if (s.isIdentity) return src
-        var img = crop(src, s.crop)
-        img = orient(img, s.quarterTurns, s.flipHorizontal)
+        // El recorte se define sobre la imagen ya girada/espejada: es lo que el usuario ve al recortar.
+        var img = orient(src, s.quarterTurns, s.flipHorizontal)
+        img = crop(img, s.crop)
         if (hasTone(s)) img = tone(img, s)
         if (s.sharpen > 0f) img = sharpen(img, s.sharpen)
         if (s.vignette > 0f) img = vignette(img, s.vignette)

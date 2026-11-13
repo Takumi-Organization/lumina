@@ -14,7 +14,9 @@ import com.adrian.lumina.domain.model.ThemeMode
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.DisposableEffect
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +39,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             val s by container.settings.settings.collectAsState(initial = AppSettings())
             val dark = when (s.theme) { ThemeMode.SYSTEM -> isSystemInDarkTheme(); ThemeMode.LIGHT -> false; ThemeMode.DARK -> true }
+            // Iconos de las barras del sistema acordes al tema elegido (no solo al del sistema).
+            DisposableEffect(dark) {
+                val t = android.graphics.Color.TRANSPARENT
+                enableEdgeToEdge(
+                    statusBarStyle = if (dark) SystemBarStyle.dark(t) else SystemBarStyle.light(t, t),
+                    navigationBarStyle = if (dark) SystemBarStyle.dark(t) else SystemBarStyle.light(t, t),
+                )
+                onDispose {}
+            }
             // «Proteger pantalla»: oculta en recientes y bloquea capturas.
             LaunchedEffect(s.privacyScreen) {
                 if (s.privacyScreen) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)

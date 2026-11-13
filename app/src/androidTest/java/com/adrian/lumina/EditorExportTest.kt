@@ -49,4 +49,23 @@ class EditorExportTest {
         val small = codec.decode(uri.toString(), 200)
         assertEquals(200, small.width); assertEquals(100, small.height)
     }
+
+    @Test fun editedCopyKeepsExifFromTheOriginal() {
+        val original = codec.saveCopy(gradient(400, 300), "exif.jpg").also { created += it }
+        context.contentResolver.openFileDescriptor(original, "rw")!!.use { pfd ->
+            val e = androidx.exifinterface.media.ExifInterface(pfd.fileDescriptor)
+            e.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_MAKE, "Lumina Labs")
+            e.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_MODEL, "Prueba 9")
+            e.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_DATETIME_ORIGINAL, "2021:03:04 05:06:07")
+            e.setAttribute(androidx.exifinterface.media.ExifInterface.TAG_ORIENTATION, "6")
+            e.saveAttributes()
+        }
+        val edited = EditPipeline.apply(codec.decode(original.toString(), 4096), EditState(quarterTurns = 1))
+        val copy = codec.saveCopy(edited, "exif.jpg", original.toString()).also { created += it }
+        val e = context.contentResolver.openInputStream(copy)!!.use { androidx.exifinterface.media.ExifInterface(it) }
+        assertEquals("Lumina Labs", e.getAttribute(androidx.exifinterface.media.ExifInterface.TAG_MAKE))
+        assertEquals("Prueba 9", e.getAttribute(androidx.exifinterface.media.ExifInterface.TAG_MODEL))
+        assertEquals("2021:03:04 05:06:07", e.getAttribute(androidx.exifinterface.media.ExifInterface.TAG_DATETIME_ORIGINAL))
+        assertEquals(1, e.getAttributeInt(androidx.exifinterface.media.ExifInterface.TAG_ORIENTATION, -1))
+    }
 }

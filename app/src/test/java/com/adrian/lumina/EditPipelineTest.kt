@@ -163,3 +163,68 @@ class UndoStackTest {
         assertSame(h, h.undo()); assertSame(h, h.redo())
     }
 }
+
+class CropGeometryTest {
+    private val full = CropRect()
+    private fun near(a: Float, b: Float) = kotlin.math.abs(a - b) < 1e-5f
+
+    @Test fun rotateFourTimesIsIdentity() {
+        val r = CropRect(0.1f, 0.2f, 0.6f, 0.9f)
+        var x = r; repeat(4) { x = x.rotatedClockwise() }
+        assertTrue(near(x.left, r.left) && near(x.top, r.top) && near(x.right, r.right) && near(x.bottom, r.bottom))
+    }
+
+    @Test fun rotateKeepsTheSameContent() {
+        // 4×2 con las columnas 0..1 recortadas; tras girar 90° horario la imagen es 2×4 y el recorte son sus filas 0..1.
+        val img = PixelImage(4, 2, IntArray(8) { it })
+        val crop = CropRect(0f, 0f, 0.5f, 1f)
+        val before = EditPipeline.apply(img, EditState(crop = crop)).pixels.toSet()
+        val after = EditPipeline.apply(img, EditState(quarterTurns = 1, crop = crop.rotatedClockwise())).pixels.toSet()
+        assertEquals(before, after)
+    }
+
+    @Test fun mirrorKeepsTheSameContent() {
+        val img = PixelImage(4, 2, IntArray(8) { it })
+        val crop = CropRect(0f, 0f, 0.5f, 1f)
+        val before = EditPipeline.apply(img, EditState(crop = crop)).pixels.toSet()
+        val after = EditPipeline.apply(img, EditState(flipHorizontal = true, crop = crop.mirrored())).pixels.toSet()
+        assertEquals(before, after)
+    }
+
+    @Test fun cropIsAppliedAfterRotation() {
+        val img = PixelImage(4, 2, IntArray(8) { it })
+        val out = EditPipeline.apply(img, EditState(quarterTurns = 1, crop = CropRect(0f, 0f, 1f, 0.5f)))
+        assertEquals(2, out.width); assertEquals(2, out.height)
+    }
+
+    @Test fun hitTestFindsCornersEdgesBodyAndOutside() {
+        val r = CropRect(0.2f, 0.2f, 0.8f, 0.8f)
+        assertEquals(CropHandle.TOP_LEFT, hitHandle(r, 0.21f, 0.19f))
+        assertEquals(CropHandle.BOTTOM_RIGHT, hitHandle(r, 0.8f, 0.8f))
+        assertEquals(CropHandle.TOP, hitHandle(r, 0.5f, 0.2f))
+        assertEquals(CropHandle.LEFT, hitHandle(r, 0.2f, 0.5f))
+        assertEquals(CropHandle.MOVE, hitHandle(r, 0.5f, 0.5f))
+        assertNull(hitHandle(r, 0.05f, 0.05f))
+    }
+
+    @Test fun dragMovesEdgesAndStaysInBounds() {
+        val r = CropRect(0.2f, 0.2f, 0.8f, 0.8f)
+        val a = dragCrop(r, CropHandle.TOP_LEFT, 0.1f, 0.1f)
+        assertTrue(near(a.left, 0.3f) && near(a.top, 0.3f) && near(a.right, 0.8f))
+        val b = dragCrop(r, CropHandle.RIGHT, 0.5f, 0f)
+        assertEquals(1f, b.right, 0f)
+        val m = dragCrop(r, CropHandle.MOVE, 0.9f, -0.9f)
+        assertTrue(near(m.right, 1f) && near(m.top, 0f) && near(m.width, 0.6f) && near(m.height, 0.6f))
+    }
+
+    @Test fun dragNeverCollapsesBelowMinimum() {
+        val r = CropRect(0.2f, 0.2f, 0.8f, 0.8f)
+        val a = dragCrop(r, CropHandle.LEFT, 5f, 0f)
+        assertEquals(MIN_CROP, a.width, 1e-5f)
+        val b = dragCrop(r, CropHandle.BOTTOM, 0f, -5f)
+        assertEquals(MIN_CROP, b.height, 1e-5f)
+        assertEquals(0f, dragCrop(r, CropHandle.TOP_LEFT, -5f, -5f).left, 0f)
+    }
+
+    @Test fun fullRectIsFull() { assertTrue(full.isFull); assertFalse(CropRect(0.1f, 0f, 1f, 1f).isFull) }
+}

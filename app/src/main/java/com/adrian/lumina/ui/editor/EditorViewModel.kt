@@ -56,7 +56,7 @@ class EditorViewModel(private val item: MediaItem, private val codec: ImageCodec
             if (src == null) { failedToLoad.value = true; return@launch }
             source = src
             original.value = ImageCodec.toBitmap(src)
-            live.collectLatest { st ->
+            combine(live, cropMode) { st, cm -> if (cm) st.copy(crop = CropRect()) else st }.collectLatest { st ->
                 preview.value = withContext(Dispatchers.Default) { ImageCodec.toBitmap(EditPipeline.apply(src, st)) }
             }
         }
@@ -71,8 +71,16 @@ class EditorViewModel(private val item: MediaItem, private val codec: ImageCodec
     fun commitDraft() { draft.value?.let { history.value = history.value.push(it) }; draft.value = null }
 
     private fun apply(f: (EditState) -> EditState) { draft.value = null; history.value = history.value.push(f(history.value.current)) }
-    fun rotate(turns: Int) = apply { it.copy(quarterTurns = ((it.quarterTurns + turns) % 4 + 4) % 4) }
-    fun flip() = apply { it.copy(flipHorizontal = !it.flipHorizontal) }
+    /** Gira conservando el mismo contenido recortado (el rectángulo gira con la imagen). */
+    fun rotate(turns: Int) = apply { st ->
+        var crop = st.crop
+        repeat(((turns % 4) + 4) % 4) { crop = crop.rotatedClockwise() }
+        st.copy(quarterTurns = ((st.quarterTurns + turns) % 4 + 4) % 4, crop = crop)
+    }
+    fun flip() = apply { it.copy(flipHorizontal = !it.flipHorizontal, crop = it.crop.mirrored()) }
+
+    /** Recorte libre: se actualiza en vivo al arrastrar y se confirma con [commitDraft]. */
+    fun cropDraft(rect: CropRect) { draft.value = (draft.value ?: history.value.current).copy(crop = rect) }
     fun reset() = apply { EditState() }
     fun undo() { draft.value = null; history.value = history.value.undo() }
     fun redo() { draft.value = null; history.value = history.value.redo() }
@@ -83,12 +91,16 @@ class EditorViewModel(private val item: MediaItem, private val codec: ImageCodec
         apply { st ->
             if (ratio == null) st.copy(crop = CropRect())
             else {
-                // El recorte se define sobre la imagen sin girar: con giro impar la proporción se invierte.
-                val r = if (st.quarterTurns % 2 == 1) 1f / ratio else ratio
-                st.copy(crop = centeredCrop(src.width, src.height, r))
+                val odd = st.quarterTurns % 2 == 1
+                val w = if (odd) src.height else src.width
+                val h = if (odd) src.width else src.height
+                st.copy(crop = centeredCrop(w, h, ratio))
             }
         }
     }
+
+    /** En la pestaña de recorte se muestra la imagen entera (con tono) para poder arrastrar el rectángulo. */
+    val cropMode = MutableStateFlow(false)
 
     /** Renderiza a resolución completa (≤ [EXPORT_SIDE]) y guarda una copia nueva. */
     fun save() {
@@ -99,7 +111,7 @@ class EditorViewModel(private val item: MediaItem, private val codec: ImageCodec
             saveState.value = runCatching {
                 withContext(Dispatchers.IO) {
                     val full = codec.decode(item.uri, EXPORT_SIDE)
-                    codec.saveCopy(EditPipeline.apply(full, st), item.name).toString()
+                    codec.saveCopy(EditPipeline.apply(full, st), item.name, item.uri).toString()
                 }
             }.fold({ SaveState.Done(it) }, { android.util.Log.w("Lumina", "No se pudo guardar la copia", it); SaveState.Failed })
         }

@@ -36,6 +36,10 @@ private val Dark = darkColorScheme(
     surface = LuminaColors.Ink, onSurface = LuminaColors.Bone,
     surfaceVariant = LuminaColors.InkRaised, onSurfaceVariant = LuminaColors.BoneDim,
     outline = LuminaColors.InkLine, outlineVariant = LuminaColors.InkLine,
+    secondary = LuminaColors.Lumen, onSecondary = LuminaColors.Ink,
+    secondaryContainer = LuminaColors.InkLine, onSecondaryContainer = LuminaColors.Bone,
+    surfaceContainer = LuminaColors.InkRaised, surfaceContainerHigh = LuminaColors.InkRaised, surfaceContainerHighest = LuminaColors.InkLine,
+    surfaceContainerLow = LuminaColors.Ink, surfaceTint = LuminaColors.Lumen,
 )
 private val Light = lightColorScheme(
     primary = LuminaColors.LumenDeep, onPrimary = LuminaColors.Paper,
@@ -43,6 +47,10 @@ private val Light = lightColorScheme(
     surface = LuminaColors.Paper, onSurface = LuminaColors.Charcoal,
     surfaceVariant = LuminaColors.PaperRaised, onSurfaceVariant = LuminaColors.CharcoalDim,
     outline = LuminaColors.PaperLine, outlineVariant = LuminaColors.PaperLine,
+    secondary = LuminaColors.LumenDeep, onSecondary = LuminaColors.Paper,
+    secondaryContainer = LuminaColors.PaperLine, onSecondaryContainer = LuminaColors.Charcoal,
+    surfaceContainer = LuminaColors.PaperRaised, surfaceContainerHigh = LuminaColors.PaperRaised, surfaceContainerHighest = LuminaColors.PaperLine,
+    surfaceContainerLow = LuminaColors.Paper, surfaceTint = LuminaColors.LumenDeep,
 )
 
 private val LuminaTypography = Typography(
@@ -70,6 +78,10 @@ fun LuminaTheme(
     androidx.compose.runtime.CompositionLocalProvider(
         LocalAnimationsEnabled provides animations, LocalHapticsEnabled provides haptics, LocalThumbSize provides thumbPx,
     ) {
-        MaterialTheme(colorScheme = if (dark) Dark else Light, typography = LuminaTypography, content = content)
+        val scheme = if (dark) Dark else Light
+        MaterialTheme(colorScheme = scheme, typography = LuminaTypography) {
+            // Sin Surface, el texto sin color explícito sale negro sobre fondo oscuro.
+            androidx.compose.material3.Surface(color = scheme.background, contentColor = scheme.onBackground, content = content)
+        }
     }
 }
