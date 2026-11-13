@@ -41,4 +41,12 @@
     <string name="info_duration">Duración</string>
     <string name="info_megapixels">%1$d × %2$d · %3$s MP</string>
     <string name="viewer_counter">%1$d / %2$d</string>
+    <string name="video_play">Reproducir</string>
+    <string name="video_pause">Pausar</string>
+    <string name="video_replay">Repetir</string>
+    <string name="video_mute">Silenciar</string>
+    <string name="video_unmute">Activar sonido</string>
+    <string name="video_rotate">Girar pantalla</string>
+    <string name="video_volume">Volumen</string>
+    <string name="video_seek_bar">Progreso</string>
 </resources>

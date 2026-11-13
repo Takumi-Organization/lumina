@@ -52,7 +52,7 @@ class ViewerScreenTest {
                 ViewerScreen(
                     items = list, startId = start, onClose = { closed++ }, onPageSettled = { settled += it },
                     onToggleFavorite = { favorited += it.id }, onShare = { shared += it.id }, onDelete = { deleted += it.id },
-                    onPlayVideo = {}, locationGranted = locationGranted, onRequestLocation = { locationRequests++ },
+                    locationGranted = locationGranted, onRequestLocation = { locationRequests++ },
                     loadExif = { if (locationGranted) exif else exif.copy(latitude = null, longitude = null) },
                 )
             }
@@ -125,5 +125,23 @@ class ViewerScreenTest {
         rule.onNodeWithTag("viewer-pager").performTouchInput { click() }
         rule.mainClock.advanceTimeBy(600) // el toque espera por si es un doble toque
         rule.onNodeWithTag("viewer-counter").assertExists()
+    }
+
+    @Test fun landscapeConfigurationComposesAndKeepsControls() {
+        rule.setContent {
+            val landscape = android.content.res.Configuration(androidx.compose.ui.platform.LocalConfiguration.current)
+                .apply { orientation = android.content.res.Configuration.ORIENTATION_LANDSCAPE }
+            androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalConfiguration provides landscape) {
+                LuminaTheme {
+                    ViewerScreen(
+                        items = items, startId = 1, onClose = {}, onPageSettled = {}, onToggleFavorite = {},
+                        onShare = {}, onDelete = {}, locationGranted = true, onRequestLocation = {}, loadExif = { null },
+                        autoHideChromeMs = Long.MAX_VALUE,
+                    )
+                }
+            }
+        }
+        rule.onNodeWithTag("viewer-counter").assertTextEquals("1 / 3")
+        rule.onNodeWithTag("viewer-delete").assertIsDisplayed()
     }
 }

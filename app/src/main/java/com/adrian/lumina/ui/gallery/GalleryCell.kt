@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.adrian.lumina.data.media.Thumb
 import com.adrian.lumina.domain.model.MediaItem
+import com.adrian.lumina.domain.usecase.formatClock
 import com.adrian.lumina.ui.components.LocalSharedScopes
 import com.adrian.lumina.ui.components.mediaKey
 import com.adrian.lumina.ui.theme.LocalAnimationsEnabled
@@ -105,7 +106,7 @@ fun GalleryCell(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(Icons.Rounded.PlayArrow, null, tint = Color.White, modifier = Modifier.size(16.dp))
-                    Text(formatDuration(item.durationMs), color = Color.White, fontSize = 11.sp)
+                    Text(formatClock(item.durationMs), color = Color.White, fontSize = 11.sp)
                 }
             }
             if (item.isFavorite) {

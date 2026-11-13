@@ -29,9 +29,4 @@ class MediaActions(private val context: Context) {
     /** Pide al sistema mover a la papelera (recuperable); el sistema muestra su confirmación. */
     fun trashRequest(items: List<MediaItem>): IntentSender =
         MediaStore.createTrashRequest(context.contentResolver, items.map { Uri.parse(it.uri) }, true).intentSender
-
-    /** Provisional hasta la fase 4 (reproductor integrado). */
-    fun viewExternally(item: MediaItem): Intent =
-        Intent(Intent.ACTION_VIEW).setDataAndType(Uri.parse(item.uri), if (item.isVideo) "video/*" else "image/*")
-            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
 }

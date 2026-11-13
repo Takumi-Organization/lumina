@@ -105,3 +105,21 @@ class ExifFormatTest {
         assertEquals(null, megapixels(0, 100))
     }
 }
+
+class ClockTest {
+    @Test fun clock() {
+        assertEquals("0:00", formatClock(0)); assertEquals("0:09", formatClock(9_999))
+        assertEquals("1:05", formatClock(65_000)); assertEquals("1:02:05", formatClock(3_725_000))
+        assertEquals("0:00", formatClock(-5))
+    }
+    @Test fun seekClamps() {
+        assertEquals(0L, seekTarget(4_000, 60_000, -10_000))
+        assertEquals(60_000L, seekTarget(55_000, 60_000, SEEK_STEP_MS))
+        assertEquals(24_000L, seekTarget(14_000, 60_000, SEEK_STEP_MS))
+        assertEquals(30_000L, seekTarget(20_000, 0, SEEK_STEP_MS)) // duración desconocida
+    }
+    @Test fun progress() {
+        assertEquals(0.5f, progressFraction(30, 60), 0f); assertEquals(0f, progressFraction(5, 0), 0f)
+        assertEquals(1f, progressFraction(90, 60), 0f)
+    }
+}

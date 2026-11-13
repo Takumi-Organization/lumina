@@ -111,7 +111,6 @@ fun LuminaHost(container: AppContainer) {
                         onToggleFavorite = vm::toggleFavorite,
                         onShare = { share(listOf(it)) },
                         onDelete = { trash(listOf(it)) },
-                        onPlayVideo = { runCatching { context.startActivity(container.actions.viewExternally(it)) } },
                         locationGranted = locationGranted,
                         onRequestLocation = { locationLauncher.launch(Manifest.permission.ACCESS_MEDIA_LOCATION) },
                         loadExif = container.exif::read,

@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,6 +55,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import android.content.res.Configuration
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.media3.common.Player
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
@@ -79,7 +85,8 @@ fun ViewerScreen(
     onToggleFavorite: (MediaItem) -> Unit,
     onShare: (MediaItem) -> Unit,
     onDelete: (MediaItem) -> Unit,
-    onPlayVideo: (MediaItem) -> Unit,
+    autoPlayVideos: Boolean = false,
+    autoHideChromeMs: Long = CHROME_HIDE_MS,
     locationGranted: Boolean,
     onRequestLocation: () -> Unit,
     loadExif: suspend (MediaItem) -> ExifInfo?,
@@ -93,13 +100,16 @@ fun ViewerScreen(
     var showInfo by rememberSaveable { mutableStateOf(false) }
     val current = items[pager.currentPage.coerceIn(0, items.lastIndex)]
     val settled by rememberUpdatedState(onPageSettled)
+    var activePlayer by remember { mutableStateOf<Player?>(null) }
+    val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    ImmersiveWhen(landscape)
 
     BackHandler { if (showInfo) showInfo = false else onClose() }
     LightIconsOnBlack()
 
     // Los controles se ocultan solos; cualquier cambio de página o toque los recupera.
     LaunchedEffect(chrome, pager.currentPage, showInfo) {
-        if (chrome && !showInfo) { delay(CHROME_HIDE_MS); chrome = false }
+        if (chrome && !showInfo) { delay(autoHideChromeMs); chrome = false }
     }
     LaunchedEffect(pager) {
         snapshotFlow { pager.settledPage }.collect { page -> items.getOrNull(page)?.let { settled(it.id) } }
@@ -120,7 +130,8 @@ fun ViewerScreen(
                 isCurrent = page == pager.currentPage,
                 onTap = { chrome = !chrome },
                 onZoomedChange = { if (page == pager.currentPage) zoomed = it },
-                onPlay = { onPlayVideo(item) },
+                autoPlay = autoPlayVideos,
+                onPlayerChange = { activePlayer = it },
             )
         }
 
@@ -128,13 +139,16 @@ fun ViewerScreen(
             TopBar(current, pager.currentPage + 1, items.size, onClose)
         }
         AnimatedVisibility(chrome, Modifier.align(Alignment.BottomCenter), enter = fadeIn(), exit = fadeOut()) {
-            BottomBar(
-                favorite = current.isFavorite,
-                onFavorite = { onToggleFavorite(current) },
-                onShare = { onShare(current) },
-                onInfo = { showInfo = true },
-                onDelete = { onDelete(current) },
-            )
+            Column {
+                activePlayer?.takeIf { current.isVideo }?.let { VideoControls(it) }
+                BottomBar(
+                    favorite = current.isFavorite,
+                    onFavorite = { onToggleFavorite(current) },
+                    onShare = { onShare(current) },
+                    onInfo = { showInfo = true },
+                    onDelete = { onDelete(current) },
+                )
+            }
         }
     }
 
@@ -150,7 +164,8 @@ private fun ViewerPage(
     isCurrent: Boolean,
     onTap: () -> Unit,
     onZoomedChange: (Boolean) -> Unit,
-    onPlay: () -> Unit,
+    autoPlay: Boolean,
+    onPlayerChange: (Player?) -> Unit,
 ) {
     val scopes = LocalSharedScopes.current
     val shared = if (scopes != null) with(scopes.shared) {
@@ -160,28 +175,25 @@ private fun ViewerPage(
     } else Modifier
     val context = LocalPlatformContext.current
 
+    if (item.isVideo) {
+        // Los vídeos no hacen zoom: el doble toque se reserva para saltar ±10 s.
+        Box(Modifier.fillMaxSize().then(shared)) {
+            VideoPage(item, isCurrent, autoPlay, onTap, onPlayerChange)
+        }
+        return
+    }
     ZoomableBox(onTap = onTap, onZoomedChange = onZoomedChange) {
         Box(Modifier.fillMaxSize().then(shared)) {
             // Capa 1: la misma miniatura que la cuadrícula (ya en caché) → sin parpadeo al abrir.
             AsyncImage(Thumb(item.uri), null, Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
             // Capa 2: imagen real, acotada a 2048 px (suficiente para 4–6× sin cargar el original completo).
-            if (!item.isVideo && isCurrent) {
+            if (isCurrent) {
                 AsyncImage(
                     model = ImageRequest.Builder(context).data(android.net.Uri.parse(item.uri)).size(Size(2048, 2048)).build(),
                     contentDescription = item.name,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Fit,
                 )
-            }
-        }
-        if (item.isVideo) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Box(
-                    Modifier.size(72.dp).clip(CircleShape).background(Color(0x99000000)).clickable(onClick = onPlay),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(Icons.Rounded.PlayArrow, stringResource(R.string.play_video), tint = Color.White, modifier = Modifier.size(44.dp))
-                }
             }
         }
     }
@@ -248,5 +260,20 @@ private fun LightIconsOnBlack() {
             if (prevStatus != null) controller.isAppearanceLightStatusBars = prevStatus
             if (prevNav != null) controller.isAppearanceLightNavigationBars = prevNav
         }
+    }
+}
+
+/** En horizontal se ocultan las barras del sistema (también al reproducir vídeo); un gesto desde el borde las muestra un momento. */
+@Composable
+private fun ImmersiveWhen(active: Boolean) {
+    val view = LocalView.current
+    DisposableEffect(view, active) {
+        val window = (view.context as? Activity)?.window
+        val controller = window?.let { WindowCompat.getInsetsController(it, view) }
+        if (active && controller != null) {
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+        }
+        onDispose { controller?.show(WindowInsetsCompat.Type.systemBars()) }
     }
 }
