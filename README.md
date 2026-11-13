@@ -10,6 +10,7 @@ Galería multimedia para Android (Kotlin, Compose, MVVM). Diseño y fases: [docs
 - Fase 5: álbumes. Manuales (Room v2, migración 1→2): crear/editar nombre y descripción, portada, favoritos, ocultos, añadir desde la selección, quitar, reordenar y orden Manual/fecha/nombre. Automáticos (recientes, cámara, capturas, descargas, fotos, vídeos, favoritas) y carpetas del dispositivo. Pestañas Biblioteca/Álbumes.
 - Fase 6: editor no destructivo (desde el visor, solo imágenes): exposición, contraste, saturación, temperatura, sombras, luces, nitidez, viñeta; recorte centrado por proporción, giro 90° y espejo; deshacer/rehacer, restablecer, comparar con el original (mantener pulsado) y guardar copia en Pictures/Lumina (nunca sobrescribe). Vista previa y exportación comparten el mismo pipeline en CPU (`PixelImage`), exportación hasta 4096 px de lado mayor.
 - Fase 7: búsqueda por metadatos (nombre, carpeta, tipo, mes, año, favoritas, capturas; sin acentos, es/en) tras la interfaz `SearchProvider`. No hay reconocimiento de imagen: un futuro proveedor se enchufaría sin tocar la UI.
+- Fase 8: ajustes (DataStore): tema, animaciones (y escala de animación del sistema), vibración háptica, columnas por defecto, calidad de miniaturas, orden por defecto de álbumes, autoplay de vídeo, proteger pantalla (FLAG_SECURE), resumen de almacenamiento y vaciar caché de miniaturas.
 
 Estado de verificación: ver «Verificación» al final.
 

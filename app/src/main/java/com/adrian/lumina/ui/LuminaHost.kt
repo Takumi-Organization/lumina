@@ -37,6 +37,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PhotoAlbum
 import androidx.compose.material.icons.rounded.PhotoLibrary
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Settings
+import coil3.SingletonImageLoader
+import com.adrian.lumina.domain.model.AppSettings
+import com.adrian.lumina.ui.settings.SettingsScreen
+import com.adrian.lumina.ui.settings.SettingsViewModel
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -68,7 +73,7 @@ import com.adrian.lumina.ui.gallery.GalleryUiState
 import com.adrian.lumina.ui.gallery.GalleryViewModel
 import com.adrian.lumina.ui.viewer.ViewerScreen
 
-enum class Section { LIBRARY, ALBUMS, SEARCH }
+enum class Section { LIBRARY, ALBUMS, SEARCH, SETTINGS }
 
 private sealed interface AlbumDialog {
     data class New(val ids: Set<Long>) : AlbumDialog
@@ -77,10 +82,12 @@ private sealed interface AlbumDialog {
     data class Pick(val ids: Set<Long>) : AlbumDialog
 }
 
+private val BuildConfigVersion = "0.1.0"
+
 /** Une cuadrícula y visor en un solo árbol para poder animar la transición compartida. */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun LuminaHost(container: AppContainer) {
+fun LuminaHost(container: AppContainer, settings: AppSettings = AppSettings()) {
     val vm: GalleryViewModel = viewModel(
         factory = viewModelFactory { initializer { GalleryViewModel(container.media, container.favorites) } }
     )
@@ -105,6 +112,11 @@ fun LuminaHost(container: AppContainer) {
     )
     val searchQuery by searchVm.query.collectAsStateWithLifecycle()
     val searchState by searchVm.state.collectAsStateWithLifecycle()
+    val settingsVm: SettingsViewModel = viewModel(
+        factory = viewModelFactory { initializer { SettingsViewModel(container.settings, container.media, container.favorites, container.albums) } }
+    )
+    val storage by settingsVm.storage.collectAsStateWithLifecycle()
+    LaunchedEffect(settings.defaultColumns) { vm.setColumns(settings.defaultColumns) }
     var section by rememberSaveable { mutableStateOf(Section.LIBRARY) }
     var editing by remember { mutableStateOf<MediaItem?>(null) }
     var dialog by remember { mutableStateOf<AlbumDialog?>(null) }
@@ -170,7 +182,7 @@ fun LuminaHost(container: AppContainer) {
     SharedTransitionLayout {
         AnimatedContent(
             targetState = viewerId != null,
-            transitionSpec = { fadeIn(tween(240)) togetherWith fadeOut(tween(240)) },
+            transitionSpec = { val d = if (settings.animations) 240 else 0; fadeIn(tween(d)) togetherWith fadeOut(tween(d)) },
             label = "viewer",
         ) { open ->
             CompositionLocalProvider(LocalSharedScopes provides SharedScopes(this@SharedTransitionLayout, this@AnimatedContent)) {
@@ -182,6 +194,10 @@ fun LuminaHost(container: AppContainer) {
                                     state = state, selection = selection, columns = columns, favoritesOnly = favoritesOnly,
                                     allSelectedFavorite = selection.isNotEmpty() && vm.allSelectedAreFavorite(),
                                     actions = actions, gridState = gridState,
+                                )
+                                section == Section.SETTINGS -> SettingsScreen(
+                                    settings, storage, BuildConfigVersion, settingsVm::update,
+                                    onClearCache = { SingletonImageLoader.get(context).memoryCache?.clear() },
                                 )
                                 section == Section.SEARCH -> SearchScreen(searchQuery, searchState, searchVm::setQuery, vm::openViewer)
                                 albumDetail != null -> AlbumDetailScreen(
@@ -198,7 +214,7 @@ fun LuminaHost(container: AppContainer) {
                                     ),
                                 )
                                 else -> AlbumsScreen(
-                                    overview = overview, showHidden = showHidden, onOpen = albumsVm::openAlbum,
+                                    overview = overview, showHidden = showHidden, onOpen = { albumsVm.openAlbum(it, settings.albumSort) },
                                     onCreate = { dialog = AlbumDialog.New(emptySet()) }, onShowHidden = albumsVm::setShowHidden,
                                 )
                             }
@@ -218,6 +234,11 @@ fun LuminaHost(container: AppContainer) {
                                 selected = section == Section.SEARCH, onClick = { section = Section.SEARCH },
                                 icon = { Icon(Icons.Rounded.Search, null) }, label = { Text(stringResource(R.string.tab_search)) },
                                 modifier = Modifier.testTag("tab-search"),
+                            )
+                            NavigationBarItem(
+                                selected = section == Section.SETTINGS, onClick = { section = Section.SETTINGS },
+                                icon = { Icon(Icons.Rounded.Settings, null) }, label = { Text(stringResource(R.string.tab_settings)) },
+                                modifier = Modifier.testTag("tab-settings"),
                             )
                         }
                     }
@@ -239,6 +260,7 @@ fun LuminaHost(container: AppContainer) {
                         onShare = { share(listOf(it)) },
                         onDelete = { trash(listOf(it)) },
                         onEdit = { editing = it },
+                        autoPlayVideos = settings.autoplayVideos,
                         locationGranted = locationGranted,
                         onRequestLocation = { locationLauncher.launch(Manifest.permission.ACCESS_MEDIA_LOCATION) },
                         loadExif = container.exif::read,

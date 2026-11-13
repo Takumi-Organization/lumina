@@ -122,7 +122,7 @@ private fun AlbumTile(card: AlbumCard, onClick: () -> Unit) {
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
             card.cover?.let {
-                AsyncImage(Thumb(it.uri), null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                AsyncImage(Thumb(it.uri, com.adrian.lumina.ui.theme.LocalThumbSize.current), null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
             }
             if (card.isFavorite) Icon(
                 Icons.Rounded.Favorite, stringResource(R.string.favorite), tint = androidx.compose.ui.graphics.Color.White,

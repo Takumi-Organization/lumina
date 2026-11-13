@@ -57,7 +57,7 @@ class AlbumsViewModel(
         }
     }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    fun openAlbum(ref: AlbumRef) { selection.value = emptySet(); sort.value = AlbumSort.MANUAL; open.value = ref }
+    fun openAlbum(ref: AlbumRef, defaultSort: AlbumSort = AlbumSort.MANUAL) { selection.value = emptySet(); sort.value = defaultSort; open.value = ref }
     fun closeAlbum() { selection.value = emptySet(); open.value = null }
     fun setSort(s: AlbumSort) { sort.value = s }
     fun toggle(id: Long) = selection.update { if (id in it) it - id else it + id }

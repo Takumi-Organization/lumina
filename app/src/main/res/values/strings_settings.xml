@@ -1,0 +1,36 @@
+<resources>
+    <string name="tab_settings">Ajustes</string>
+    <string name="set_appearance">Apariencia</string>
+    <string name="set_theme">Tema</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="set_animations">Animaciones</string>
+    <string name="set_haptics">Vibración háptica</string>
+    <string name="set_library">Biblioteca y vídeo</string>
+    <string name="set_columns">Columnas por defecto: %d</string>
+    <string name="set_quality">Calidad de las miniaturas</string>
+    <string name="quality_low">Baja</string>
+    <string name="quality_normal">Normal</string>
+    <string name="quality_high">Alta</string>
+    <string name="set_album_sort">Orden por defecto en los álbumes</string>
+    <string name="set_autoplay">Reproducir vídeos automáticamente</string>
+    <string name="set_privacy">Privacidad</string>
+    <string name="set_privacy_screen">Proteger pantalla</string>
+    <string name="set_privacy_note">Oculta Lumina en las apps recientes y bloquea las capturas de pantalla.</string>
+    <string name="set_storage">Almacenamiento</string>
+    <string name="set_loading">Calculando…</string>
+    <plurals name="set_photos">
+        <item quantity="one">%1$d foto · %2$s</item>
+        <item quantity="other">%1$d fotos · %2$s</item>
+    </plurals>
+    <plurals name="set_videos">
+        <item quantity="one">%1$d vídeo · %2$s</item>
+        <item quantity="other">%1$d vídeos · %2$s</item>
+    </plurals>
+    <string name="set_total">Total: %s</string>
+    <string name="set_local_data">Datos propios de Lumina: %1$d favoritas, %2$d álbumes (en este dispositivo)</string>
+    <string name="set_clear_cache">Vaciar caché de miniaturas</string>
+    <string name="set_about">Acerca de</string>
+    <string name="set_about_body">Todo se queda en tu dispositivo. Lumina no sube ni analiza el contenido de tus imágenes.</string>
+</resources>

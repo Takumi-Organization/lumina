@@ -4,6 +4,13 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.view.WindowManager
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import com.adrian.lumina.domain.model.AppSettings
+import com.adrian.lumina.domain.model.ThemeMode
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -28,7 +35,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val container = (application as LuminaApp).container
         setContent {
-            LuminaTheme { PermissionGate { LuminaHost(container) } }
+            val s by container.settings.settings.collectAsState(initial = AppSettings())
+            val dark = when (s.theme) { ThemeMode.SYSTEM -> isSystemInDarkTheme(); ThemeMode.LIGHT -> false; ThemeMode.DARK -> true }
+            // «Proteger pantalla»: oculta en recientes y bloquea capturas.
+            LaunchedEffect(s.privacyScreen) {
+                if (s.privacyScreen) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            }
+            // Los ajustes del sistema también cuentan: sin animaciones si la escala del sistema es 0.
+            val systemAnimations = remember { Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f }
+            LuminaTheme(dark, s.animations && systemAnimations, s.haptics, s.thumbQuality.px) { PermissionGate { LuminaHost(container, s) } }
         }
     }
 }

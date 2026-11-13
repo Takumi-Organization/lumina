@@ -49,6 +49,8 @@ import com.adrian.lumina.domain.usecase.formatClock
 import com.adrian.lumina.ui.components.LocalSharedScopes
 import com.adrian.lumina.ui.components.mediaKey
 import com.adrian.lumina.ui.theme.LocalAnimationsEnabled
+import com.adrian.lumina.ui.theme.LocalHapticsEnabled
+import com.adrian.lumina.ui.theme.LocalThumbSize
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 
@@ -63,6 +65,7 @@ fun GalleryCell(
     modifier: Modifier = Modifier,
 ) {
     val haptics = LocalHapticFeedback.current
+    val hapticsOn = LocalHapticsEnabled.current
     val animate = LocalAnimationsEnabled.current
     val target = if (selected) 0.86f else 1f
     val spec: AnimationSpec<Float> =
@@ -83,7 +86,7 @@ fun GalleryCell(
             .semantics { this.selected = selected; contentDescription = item.name }
             .combinedClickable(
                 onClick = onClick,
-                onLongClick = { haptics.performHapticFeedback(HapticFeedbackType.LongPress); onLongClick() },
+                onLongClick = { if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress); onLongClick() },
             ),
     ) {
         Box(
@@ -93,7 +96,7 @@ fun GalleryCell(
                 .then(if (selected) Modifier.border(2.dp, lumen, RoundedCornerShape(8.dp)) else Modifier),
         ) {
             AsyncImage(
-                model = Thumb(item.uri),
+                model = Thumb(item.uri, LocalThumbSize.current),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),

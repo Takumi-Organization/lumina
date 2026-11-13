@@ -55,7 +55,21 @@ private val LuminaTypography = Typography(
 /** Si es false, las animaciones propias se desactivan (ajuste de usuario; ver Fase 8). */
 val LocalAnimationsEnabled = staticCompositionLocalOf { true }
 
+val LocalHapticsEnabled = staticCompositionLocalOf { true }
+/** Lado en px de las miniaturas de la cuadrícula (ajuste «calidad»). */
+val LocalThumbSize = staticCompositionLocalOf { 320 }
+
 @Composable
-fun LuminaTheme(dark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = if (dark) Dark else Light, typography = LuminaTypography, content = content)
+fun LuminaTheme(
+    dark: Boolean = isSystemInDarkTheme(),
+    animations: Boolean = true,
+    haptics: Boolean = true,
+    thumbPx: Int = 320,
+    content: @Composable () -> Unit,
+) {
+    androidx.compose.runtime.CompositionLocalProvider(
+        LocalAnimationsEnabled provides animations, LocalHapticsEnabled provides haptics, LocalThumbSize provides thumbPx,
+    ) {
+        MaterialTheme(colorScheme = if (dark) Dark else Light, typography = LuminaTypography, content = content)
+    }
 }

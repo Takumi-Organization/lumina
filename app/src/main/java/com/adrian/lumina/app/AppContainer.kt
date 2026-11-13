@@ -6,6 +6,10 @@ import com.adrian.lumina.data.db.LuminaDatabase
 import com.adrian.lumina.data.db.MIGRATION_1_2
 import com.adrian.lumina.data.db.RoomAlbums
 import com.adrian.lumina.data.db.RoomFavorites
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
+import com.adrian.lumina.data.prefs.DataStoreSettings
+import com.adrian.lumina.domain.repository.SettingsRepository
 import com.adrian.lumina.data.media.ExifReader
 import com.adrian.lumina.data.media.ImageCodec
 import com.adrian.lumina.data.media.MediaActions
@@ -25,5 +29,8 @@ class AppContainer(context: Context) {
     val actions = MediaActions(context)
     val exif = ExifReader(context)
     val images = ImageCodec(context)
+    val settings: SettingsRepository = DataStoreSettings(
+        PreferenceDataStoreFactory.create { context.preferencesDataStoreFile("settings") }
+    )
     val search: SearchProvider = MetadataSearchProvider()
 }

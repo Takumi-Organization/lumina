@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.androidx.media3.ui.compose)
     // room-testing (androidTest) exige serialización 1.11; se alinea toda la app para que la resolución sea coherente
     implementation(platform(libs.kotlinx.serialization.bom))
+    implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
