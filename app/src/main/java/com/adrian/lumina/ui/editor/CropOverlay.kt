@@ -40,9 +40,12 @@ fun CropOverlay(rect: CropRect, aspect: Float, color: Color, onChange: (CropRect
                 val t = (size.height - h) / 2f
                 return androidx.compose.ui.geometry.Rect(l, t, l + w, t + h)
             }
+            // El rectángulo de trabajo se acumula aquí: entre dos eventos de puntero la recomposición puede no haber llegado.
+            var working = current
             detectDragGestures(
                 onDragStart = { p ->
                     val f = fit()
+                    working = current
                     handle = hitHandle(current, (p.x - f.left) / f.width, (p.y - f.top) / f.height, slop = 0.07f)
                 },
                 onDragEnd = { handle = null; onEnd() },
@@ -51,7 +54,8 @@ fun CropOverlay(rect: CropRect, aspect: Float, color: Color, onChange: (CropRect
                     val h = handle ?: return@detectDragGestures
                     change.consume()
                     val f = fit()
-                    onChange(dragCrop(current, h, drag.x / f.width, drag.y / f.height))
+                    working = dragCrop(working, h, drag.x / f.width, drag.y / f.height)
+                    onChange(working)
                 },
             )
         },

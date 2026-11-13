@@ -8,7 +8,7 @@ Galería multimedia para Android (Kotlin, Compose, MVVM). Diseño y fases: [docs
 - Fase 3: visor (paginador, zoom con pellizco/doble toque, transición compartida, controles que se ocultan, información EXIF y ubicación, compartir, papelera del sistema, favoritos). Vídeo: póster + reproductor del sistema (provisional hasta la fase 4).
 - Fase 4: vídeo integrado (Media3 ExoPlayer): reproducir/pausa, progreso, volumen/silencio, doble toque ±10 s, girar a horizontal (modo inmersivo). Pendiente de revisión visual en horizontal.
 - Fase 5: álbumes. Manuales (Room v2, migración 1→2): crear/editar nombre y descripción, portada, favoritos, ocultos, añadir desde la selección, quitar, reordenar y orden Manual/fecha/nombre. Automáticos (recientes, cámara, capturas, descargas, fotos, vídeos, favoritas) y carpetas del dispositivo. Pestañas Biblioteca/Álbumes.
-- Fase 6: editor no destructivo (desde el visor, solo imágenes): exposición, contraste, saturación, temperatura, sombras, luces, nitidez, viñeta; recorte centrado por proporción, giro 90° y espejo; deshacer/rehacer, restablecer, comparar con el original (mantener pulsado) y guardar copia en Pictures/Lumina (nunca sobrescribe). Vista previa y exportación comparten el mismo pipeline en CPU (`PixelImage`), exportación hasta 4096 px de lado mayor.
+- Fase 6: editor no destructivo (desde el visor, solo imágenes): exposición, contraste, saturación, temperatura, sombras, luces, nitidez, viñeta; recorte libre con agarres (o por proporción), giro 90° y espejo; deshacer/rehacer, restablecer, comparar con el original (mantener pulsado) y guardar copia en Pictures/Lumina con el EXIF del original (nunca sobrescribe). Vista previa y exportación comparten el mismo pipeline en CPU (`PixelImage`), exportación hasta 4096 px de lado mayor.
 - Fase 7: búsqueda por metadatos (nombre, carpeta, tipo, mes, año, favoritas, capturas; sin acentos, es/en) tras la interfaz `SearchProvider`. No hay reconocimiento de imagen: un futuro proveedor se enchufaría sin tocar la UI.
 - Fase 8: ajustes (DataStore): tema, animaciones (y escala de animación del sistema), vibración háptica, columnas por defecto, calidad de miniaturas, orden por defecto de álbumes, autoplay de vídeo, proteger pantalla (FLAG_SECURE), resumen de almacenamiento y vaciar caché de miniaturas.
 
@@ -24,22 +24,37 @@ python3 tools/seed-media.py emulator-5556 120   # siembra fotos/vídeos sintéti
 adb -s emulator-5556 install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-## Verificación (2026-11-13)
+## Verificación (2026-11-14)
 
-Verificado:
-- `testDebugUnitTest`: 78 tests JVM en verde (dominio, líneas de tiempo, álbumes automáticos/manuales, búsqueda, **píxeles del pipeline del editor**, deshacer/rehacer, DataStore sobre archivo real, resumen de almacenamiento, rendimiento de dominio).
-- `connectedDebugAndroidTest` en el emulador compartido `emulator-5554` (Pixel_API36): 31 tests instrumentados en verde: Room (favoritos, álbumes, **migración 1→2 contra `schemas/2.json`**), pantallas de galería/visor/vídeo previas, pantallas de álbumes/búsqueda/ajustes, y **guardado real de una copia editada en MediaStore** (`Pictures/Lumina`, dimensiones tras girar, original intacto).
-- `assembleDebug`, `assembleRelease` (R8) y `lintDebug` sin errores; `apksigner verify` OK (firma «Android Debug»).
-- Mediciones (no son frames en un móvil):
-  - JVM, 50 000 elementos: línea de tiempo 7 ms, resumen de álbumes 12 ms, búsqueda 25 ms; editor completo sobre 12 MP (4000×3000, todos los ajustes + giro) ≈ 1,0 s en un hilo.
-  - Emulador, 12 000 elementos: construir la línea de tiempo 69 ms; tres saltos de scroll de punta a punta (12 251 filas) 581 ms; heap 16 → 23 MB. Las URIs eran falsas, así que **no incluye decodificación de miniaturas**.
+Todo lo siguiente se ejecutó en el emulador compartido  (Pixel_API36, Android 16) o en JVM; no hay prueba en móvil físico.
 
-NO verificado (déjalo para una pasada con dispositivo):
-- Instalación y uso manual en el emulador/móvil: no se hicieron capturas de pantalla ni se recorrió la interfaz a mano (`adb install`/`pm grant` fueron denegados en esta sesión). Por tanto **no se ha visto** cómo queda el aspecto visual de álbumes, editor, búsqueda ni ajustes, ni el flujo completo dentro de `LuminaHost` (pestañas, diálogos, visor desde un álbum o desde la búsqueda).
-- El **APK release no se ha ejecutado**: R8 reduce el código y podría romper algo por reflexión (Room, DataStore, Coil, Media3). Hay que lanzarlo una vez.
-- Rendimiento real con 10 000+ fotos reales (miniaturas, memoria, frames, jank) y en el móvil físico: no medido.
-- Editor: vista previa a 1280 px en CPU (sin `RenderEffect`/GPU); el recorte es centrado por proporción (sin arrastrar esquinas); no conserva EXIF en la copia; exportación limitada a 4096 px de lado mayor (`largeHeap`). Fotos de >12 MP o con poca RAM no probadas.
-- «Proteger pantalla» (FLAG_SECURE), escala de animación del sistema y alta/baja calidad de miniaturas: implementados, sin comprobar a ojo.
-- Álbumes ocultos: solo se ocultan de la lista de álbumes (las fotos siguen en la biblioteca); no es una caja fuerte.
-- Favoritos y álbumes son locales a Lumina (Room): no se sincronizan con otras apps ni sobreviven a borrar los datos de la app.
-- APK release firmado con clave de depuración: sirve para probar, no para publicar.
+Tests automáticos
+- : 89 tests JVM (dominio, líneas de tiempo, álbumes y  con repositorios falsos —crear, añadir, reordenar, portada, quitar, ocultar, eliminar—, búsqueda, píxeles del editor, geometría del recorte libre, deshacer/rehacer, DataStore sobre archivo real, almacenamiento, rendimiento de dominio).
+- : 34 tests instrumentados en verde: Room y migración 1→2 contra , pantallas de galería/visor/vídeo/álbumes/búsqueda/ajustes, tema (animaciones/háptico/calidad de miniatura), editor completo con imagen real (recorte arrastrando una esquina, deshacer), guardado real de copia en  con dimensiones correctas, original intacto y **EXIF conservado** (marca, modelo, fecha; orientación normalizada).
+- ,  (R8) y  sin errores;  OK.
+
+Recorrido real en pantalla (capturas con , interacción con )
+- Biblioteca, Álbumes, Búsqueda y Ajustes en tema claro y oscuro; permisos; crear un álbum, añadir fotos desde la selección, abrir su detalle y seleccionar.
+- Editor: sliders (exposición, saturación, temperatura), pestaña de recorte, giro, espejo, deshacer, rehacer, mantener pulsado para comparar con el original y guardar copia (archivo creado en ).
+- Vídeo (fase 4): reproducción hasta «Repetir» y giro a horizontal con modo inmersivo, el vídeo ocupa la pantalla.
+- **APK release (R8) ejecutado**: arranca, lista 10 128 elementos reales con miniaturas, Room, DataStore, búsqueda, ajustes y reproducción de vídeo funcionan sin excepciones ni reglas de keep adicionales.
+- «Proteger pantalla»: con el ajuste activo  devuelve negro (FLAG_SECURE efectivo); desactivado, normal.
+
+Defectos encontrados y corregidos al verlo en pantalla
+- Texto negro sobre fondo oscuro (faltaba  en el tema) y esquema de color M3 incompleto (barra de navegación/chips lavanda).
+- La cabecera de «Mis álbumes» quedaba bajo la barra de título (no contaba el inset de estado).
+- El arrastre del recorte aplicaba solo el último delta (estado obsoleto entre eventos): ahora acumula.
+- Salir del visor tras «girar» un vídeo dejaba toda la app en horizontal: se restablece la orientación al cerrar.
+- Los interruptores de ajustes solo respondían al pulsar el propio interruptor (ahora toda la fila) y apagados no se veían.
+
+Rendimiento (emulador, APK release, **10 128 imágenes reales** de 480×360 sembradas con , miniaturas incluidas)
+- 25 deslizamientos rápidos de punta a punta en la biblioteca, : 1,71 % de frames lentos (15 de ≈ 880); percentiles de frame 50/90/95/99 = 8/16/16/18 ms (límite de 16,6 ms a 60 Hz); GPU 7/15/16/16 ms; 0 vsync perdidos. Memoria: Java heap ≈ 20 MB, Native ≈ 160 MB.
+- Dominio en JVM con 50 000 elementos: línea de tiempo 7 ms, resumen de álbumes 12 ms, búsqueda 25 ms; editor completo sobre 12 MP ≈ 1,0 s.
+- Son cifras del emulador (GPU/CPU emuladas), útiles para comparar versiones, no para prometer fluidez en un móvil concreto.
+
+Limitaciones que siguen abiertas (lo único)
+- **Móvil físico**: no probado (ni rendimiento, ni cámara real, ni sincronización con otras apps). Es la única verificación pendiente de Adrián.
+- No se recorrieron a mano en pantalla: portada, reordenar y ocultar álbum (verificados por  y por los tests de Room/pantalla, no con el dedo); la escala de animación del sistema y la «calidad» de miniaturas (solo comprobado que el tema las expone a la UI).
+- Editor: vista previa en CPU a 1280 px; exportación hasta 4096 px de lado mayor (); no se conserva EXIF en copias PNG.
+- Álbumes ocultos: solo se ocultan de la lista (las fotos siguen en la biblioteca); favoritos y álbumes son locales a Lumina (Room) y no se sincronizan con otras apps.
+- APK release firmado con la clave de depuración: sirve para probar, no para publicar.

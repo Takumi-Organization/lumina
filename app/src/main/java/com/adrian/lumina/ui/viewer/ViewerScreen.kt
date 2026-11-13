@@ -105,6 +105,11 @@ fun ViewerScreen(
     var activePlayer by remember { mutableStateOf<Player?>(null) }
     val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     ImmersiveWhen(landscape)
+    // El botón «girar» del reproductor fuerza horizontal: al cerrar el visor hay que devolver la orientación libre.
+    val hostContext = LocalContext.current
+    DisposableEffect(hostContext) {
+        onDispose { (hostContext as? Activity)?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED }
+    }
 
     BackHandler { if (showInfo) showInfo = false else onClose() }
     LightIconsOnBlack()

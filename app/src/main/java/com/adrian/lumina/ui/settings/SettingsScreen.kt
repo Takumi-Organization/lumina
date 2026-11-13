@@ -15,6 +15,9 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -93,9 +96,20 @@ private fun Header(res: Int) =
 
 @Composable
 private fun Toggle(label: Int, value: Boolean, tag: String, onChange: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+    // Toda la fila conmuta (objetivo táctil amplio y accesible); el Switch solo muestra el estado.
+    Row(
+        Modifier.fillMaxWidth().toggleable(value, role = Role.Switch, onValueChange = onChange).padding(vertical = 6.dp).testTag("set-$tag"),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Text(stringResource(label), Modifier.weight(1f))
-        Switch(value, onChange, modifier = Modifier.testTag("set-$tag"))
+        Switch(
+            value, null,
+            colors = SwitchDefaults.colors(
+                uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                uncheckedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+        )
     }
 }
 

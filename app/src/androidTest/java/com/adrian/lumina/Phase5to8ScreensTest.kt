@@ -91,4 +91,17 @@ class Phase5to8ScreensTest {
         assertEquals(ThemeMode.DARK, current.theme)
         rule.onNodeWithTag("storage-photos").assertIsDisplayed()
     }
+
+    @Test fun themeExposesAnimationHapticsAndThumbnailSettings() {
+        var anim = true; var haptics = true; var thumb = 0
+        rule.setContent {
+            LuminaTheme(dark = false, animations = false, haptics = false, thumbPx = ThumbQuality.HIGH.px) {
+                anim = com.adrian.lumina.ui.theme.LocalAnimationsEnabled.current
+                haptics = com.adrian.lumina.ui.theme.LocalHapticsEnabled.current
+                thumb = com.adrian.lumina.ui.theme.LocalThumbSize.current
+            }
+        }
+        rule.waitForIdle()
+        assertTrue(!anim && !haptics); assertEquals(512, thumb)
+    }
 }

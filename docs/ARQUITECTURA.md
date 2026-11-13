@@ -70,7 +70,7 @@ Reglas de dependencia: `ui → domain ← data`; `domain` no importa Android (so
 | 8 | Ajustes (DataStore), almacenamiento, privacidad, háptico | tests + captura |
 | 9 | Rendimiento (biblioteca de 10 k+ sembrada), pulido, README, APK release firmado de depuración | medición de frames/memoria declarada |
 
-**Estado (2026-11-13):** fases 0–9 implementadas y commiteadas. Cumplido: compila, tests JVM e instrumentados en verde (emulador), guardado real de copia, migración de Room, mediciones de dominio y de lista grande. **Pendiente de verificar** (ver README, «Verificación»): capturas y recorrido manual de la UI nueva (fases 5–8), ejecución del APK release minificado, rendimiento con miles de fotos reales y en móvil físico. La columna «Verificado cuando» de las fases 3–4 (prueba manual en emulador) y la «captura» de la fase 8 quedan por tanto **parcialmente cumplidas**: hay tests de UI sin estado, no una prueba de extremo a extremo.
+**Estado (2026-11-14):** fases 0–9 implementadas, commiteadas y verificadas en el emulador compartido: tests JVM (89) e instrumentados (34), recorrido real en pantalla de todas las secciones, APK release (R8) ejecutado, vídeo horizontal, guardado real de copias con EXIF y medición con 10 128 imágenes reales (1,7 % de frames lentos, p99 18 ms). Lo único pendiente es probar en un **móvil físico** y recorrer a mano portada/reordenar/ocultar álbum (cubiertos por tests). Detalle y cifras en el README, «Verificación».
 
 Cada fase termina con: compila, tests en verde, ejecución en emulador `Pixel_API36` y lo que **no** se pudo comprobar dicho explícitamente.
 
