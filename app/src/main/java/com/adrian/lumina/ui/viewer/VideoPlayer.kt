@@ -177,6 +177,7 @@ fun VideoPage(
     }
 }
 
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
 private fun ActiveVideo(player: ExoPlayer, onTap: () -> Unit) {
     val snap = rememberPlayerSnapshot(player)
@@ -228,6 +229,8 @@ private fun ActiveVideo(player: ExoPlayer, onTap: () -> Unit) {
 fun VideoControls(player: Player, modifier: Modifier = Modifier) {
     val snap = rememberPlayerSnapshot(player)
     val context = LocalContext.current
+    val seekDescription = stringResource(R.string.video_seek_bar)
+    val volumeDescription = stringResource(R.string.video_volume)
     val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     var scrubbing by remember { mutableStateOf<Float?>(null) }
     var lastVolume by remember { mutableFloatStateOf(1f) }
@@ -250,7 +253,7 @@ fun VideoControls(player: Player, modifier: Modifier = Modifier) {
                     inactiveTrackColor = Color(0x55FFFFFF),
                 ),
                 modifier = Modifier.weight(1f).padding(horizontal = 8.dp).testTag("video-seek")
-                    .semantics { contentDescription = context.getString(R.string.video_seek_bar) },
+                    .semantics { contentDescription = seekDescription },
             )
             Text(formatClock(snap.durationMs), color = Color(0xFFCFC8BC), style = MaterialTheme.typography.labelMedium)
         }
@@ -279,7 +282,7 @@ fun VideoControls(player: Player, modifier: Modifier = Modifier) {
                     thumbColor = Color.White, activeTrackColor = Color.White, inactiveTrackColor = Color(0x55FFFFFF),
                 ),
                 modifier = Modifier.width(110.dp).testTag("video-volume")
-                    .semantics { contentDescription = context.getString(R.string.video_volume) },
+                    .semantics { contentDescription = volumeDescription },
             )
             Box(Modifier.weight(1f))
             IconButton(

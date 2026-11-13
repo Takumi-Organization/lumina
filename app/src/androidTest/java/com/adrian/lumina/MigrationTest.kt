@@ -15,6 +15,7 @@ class MigrationTest {
     @get:Rule val helper = MigrationTestHelper(InstrumentationRegistry.getInstrumentation(), LuminaDatabase::class.java)
 
     @Test fun v1ToV2KeepsFavoritesAndCreatesAlbumTables() {
+        InstrumentationRegistry.getInstrumentation().targetContext.deleteDatabase("mig-test") // sin restos de ejecuciones previas
         helper.createDatabase("mig-test", 1).apply {
             execSQL("INSERT INTO favorite (mediaId) VALUES (11), (22)")
             close()
@@ -24,6 +25,7 @@ class MigrationTest {
             val ids = buildList { while (c.moveToNext()) add(c.getLong(0)) }
             assertEquals(listOf(11L, 22L), ids)
         }
+        db.execSQL("PRAGMA foreign_keys = ON") // la conexión del helper no la activa siempre; Room sí lo hace en la app
         db.execSQL("INSERT INTO album (name, description, isFavorite, isHidden, createdAt) VALUES ('A', '', 0, 0, 1)")
         db.execSQL("INSERT INTO album_item (albumId, mediaId, position) VALUES (1, 5, 0)")
         db.execSQL("DELETE FROM album WHERE id = 1")

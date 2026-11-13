@@ -16,7 +16,7 @@ Galería multimedia para Android. Kotlin + Compose + MVVM. Un solo módulo Gradl
 | Ubicación EXIF | Requiere `ACCESS_MEDIA_LOCATION` (opcional, se pide solo al abrir «información»). `MediaStore.setRequireOriginal`. | Android redacta el GPS si no. |
 | Reconocimiento IA | **No se implementa.** Interfaz `SearchProvider` con implementación de metadatos; un futuro `MlSearchProvider` se enchufa sin tocar la UI. | Pedido explícito: no simular. |
 | Vídeo | Media3 ExoPlayer + controles propios en Compose. | API moderna, soporte oficial. |
-| Edición | Pipeline no destructivo: `EditState` (parámetros) → render por `ColorMatrix`/`RenderEffect` en vista previa (GPU); render final en `Bitmap` a resolución completa con kernel de nitidez, viñeta y curvas sombras/luces. Pila de estados para undo/redo. | Los parámetros son datos; la imagen original no se toca hasta exportar. |
+| Edición | Pipeline no destructivo: `EditState` (parámetros) → `EditPipeline` sobre `PixelImage` (IntArray ARGB, Kotlin puro) para **vista previa (1280 px) y exportación (≤4096 px) con el mismo código**; undo/redo con `UndoStack` inmutable. *Decisión de la fase 6:* se descartó `RenderEffect`/GPU para tener una sola ruta testeable en JVM píxel a píxel; coste: la vista previa es CPU. | Los parámetros son datos; la imagen original no se toca hasta exportar; mismo resultado en vista previa y archivo. |
 | DI | Manual (`AppContainer`). | Sin Hilt/Koin: ~10 dependencias, no justifica el coste (regla: sin abstracción sin necesidad). |
 
 ## 2. Paquetes
@@ -27,12 +27,12 @@ com.adrian.lumina
 ├─ domain/
 │  ├─ model/       MediaItem, MediaKind, Album, DateGroup, SearchQuery, EditState…
 │  ├─ repository/  MediaRepository, AlbumRepository, SettingsRepository (interfaces)
-│  └─ usecase/     GroupByDate, BuildTimelineIndex, SmartAlbums, Search (puros, testeables en JVM)
+│  └─ usecase/     BuildTimeline, SmartAlbums, AlbumOverview, Search, StorageSummary (puros, testeables en JVM)
 ├─ data/
 │  ├─ media/       MediaStoreSource (consultas, observer), ThumbnailFetcher, MediaActions (borrar/escribir)
 │  ├─ db/          Room: AlbumEntity, AlbumItemEntity, FavoriteEntity, DAOs
 │  └─ prefs/       DataStore: tema, columnas, calidad, autoplay, animaciones, orden, privacidad
-├─ editor/         EditState, EditPipeline (preview + export), UndoStack
+├─ editor/         EditState, PixelImage, EditPipeline (preview + export), UndoStack (Kotlin puro)
 └─ ui/
    ├─ theme/       paleta, tipografía, formas, movimiento
    ├─ components/  Skeleton, EmptyState, ScrubBar…
@@ -69,6 +69,8 @@ Reglas de dependencia: `ui → domain ← data`; `domain` no importa Android (so
 | 7 | Búsqueda por metadatos + `SearchProvider` | tests de dominio |
 | 8 | Ajustes (DataStore), almacenamiento, privacidad, háptico | tests + captura |
 | 9 | Rendimiento (biblioteca de 10 k+ sembrada), pulido, README, APK release firmado de depuración | medición de frames/memoria declarada |
+
+**Estado (2026-11-13):** fases 0–9 implementadas y commiteadas. Cumplido: compila, tests JVM e instrumentados en verde (emulador), guardado real de copia, migración de Room, mediciones de dominio y de lista grande. **Pendiente de verificar** (ver README, «Verificación»): capturas y recorrido manual de la UI nueva (fases 5–8), ejecución del APK release minificado, rendimiento con miles de fotos reales y en móvil físico. La columna «Verificado cuando» de las fases 3–4 (prueba manual en emulador) y la «captura» de la fase 8 quedan por tanto **parcialmente cumplidas**: hay tests de UI sin estado, no una prueba de extremo a extremo.
 
 Cada fase termina con: compila, tests en verde, ejecución en emulador `Pixel_API36` y lo que **no** se pudo comprobar dicho explícitamente.
 

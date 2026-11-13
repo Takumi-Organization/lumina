@@ -59,7 +59,7 @@ fun InfoSheet(
             if (item.width > 0) {
                 val mp = megapixels(item.width, item.height)
                 InfoRow(
-                    stringResource(R.string.info_megapixels, item.width, item.height, String.format(Locale.getDefault(), "%.1f", mp ?: 0.0)),
+                    stringResource(R.string.info_megapixels, item.width, item.height, String.format(androidx.compose.ui.platform.LocalConfiguration.current.locales[0], "%.1f", mp ?: 0.0)),
                     stringResource(R.string.info_resolution),
                 )
             }
