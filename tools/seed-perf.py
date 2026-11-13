@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Genera N fotos JPEG pequeñas (480x360) con EXIF de fecha repartido en ~10 años, para medir rendimiento con una
 biblioteca grande real. Uso: seed-perf.py <carpeta_salida> [N=10000]. Después: tar + adb push a /sdcard/DCIM/LuminaPerf
-(solo emulador, nunca el móvil real) y `content call --uri content://media/external_primary --method scan_volume --arg external_primary`.
+(solo emulador, nunca el móvil real) y escanear con
+`content call --uri content://media/external_primary --method scan_volume --arg external_primary`.
 Limpieza: borrar /sdcard/DCIM/LuminaPerf y repetir el escaneo."""
 import os, random, datetime as dt, sys
 from multiprocessing import Pool

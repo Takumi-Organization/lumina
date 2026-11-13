@@ -26,35 +26,35 @@ adb -s emulator-5556 install -r app/build/outputs/apk/debug/app-debug.apk
 
 ## Verificación (2026-11-14)
 
-Todo lo siguiente se ejecutó en el emulador compartido  (Pixel_API36, Android 16) o en JVM; no hay prueba en móvil físico.
+Todo lo siguiente se ejecutó en el emulador compartido `emulator-5554` (Pixel_API36, Android 16) o en JVM; no hay prueba en móvil físico.
 
 Tests automáticos
-- : 89 tests JVM (dominio, líneas de tiempo, álbumes y  con repositorios falsos —crear, añadir, reordenar, portada, quitar, ocultar, eliminar—, búsqueda, píxeles del editor, geometría del recorte libre, deshacer/rehacer, DataStore sobre archivo real, almacenamiento, rendimiento de dominio).
-- : 34 tests instrumentados en verde: Room y migración 1→2 contra , pantallas de galería/visor/vídeo/álbumes/búsqueda/ajustes, tema (animaciones/háptico/calidad de miniatura), editor completo con imagen real (recorte arrastrando una esquina, deshacer), guardado real de copia en  con dimensiones correctas, original intacto y **EXIF conservado** (marca, modelo, fecha; orientación normalizada).
-- ,  (R8) y  sin errores;  OK.
+- `testDebugUnitTest`: 89 tests JVM (dominio, líneas de tiempo, álbumes y `AlbumsViewModel` con repositorios falsos —crear, añadir, reordenar, portada, quitar, ocultar, eliminar—, búsqueda, píxeles del editor, geometría del recorte libre, deshacer/rehacer, DataStore sobre archivo real, almacenamiento, rendimiento de dominio).
+- `connectedDebugAndroidTest`: 34 tests instrumentados en verde: Room y migración 1→2 contra `schemas/2.json`, pantallas de galería/visor/vídeo/álbumes/búsqueda/ajustes, tema (animaciones/háptico/calidad de miniatura), editor completo con imagen real (recorte arrastrando una esquina, deshacer), guardado real de copia en `Pictures/Lumina` con dimensiones correctas, original intacto y **EXIF conservado** (marca, modelo, fecha; orientación normalizada).
+- `assembleDebug`, `assembleRelease` (R8) y `lintDebug` sin errores; `apksigner verify` OK.
 
-Recorrido real en pantalla (capturas con , interacción con )
+Recorrido real en pantalla (capturas con `screencap`, interacción con `input`)
 - Biblioteca, Álbumes, Búsqueda y Ajustes en tema claro y oscuro; permisos; crear un álbum, añadir fotos desde la selección, abrir su detalle y seleccionar.
-- Editor: sliders (exposición, saturación, temperatura), pestaña de recorte, giro, espejo, deshacer, rehacer, mantener pulsado para comparar con el original y guardar copia (archivo creado en ).
-- Vídeo (fase 4): reproducción hasta «Repetir» y giro a horizontal con modo inmersivo, el vídeo ocupa la pantalla.
-- **APK release (R8) ejecutado**: arranca, lista 10 128 elementos reales con miniaturas, Room, DataStore, búsqueda, ajustes y reproducción de vídeo funcionan sin excepciones ni reglas de keep adicionales.
-- «Proteger pantalla»: con el ajuste activo  devuelve negro (FLAG_SECURE efectivo); desactivado, normal.
+- Editor: sliders (exposición, saturación, temperatura), pestaña de recorte, giro, espejo, deshacer, rehacer, mantener pulsado para comparar con el original y guardar copia (archivo creado en `Pictures/Lumina`).
+- Vídeo (fase 4): reproducción hasta «Repetir» y giro a horizontal con modo inmersivo; el vídeo ocupa la pantalla.
+- **APK release (R8) ejecutado**: arranca, lista 10 128 elementos reales con miniaturas; Room, DataStore, búsqueda, ajustes y reproducción de vídeo funcionan sin excepciones ni reglas de keep adicionales.
+- «Proteger pantalla»: con el ajuste activo `screencap` devuelve negro (FLAG_SECURE efectivo); desactivado, normal.
 
 Defectos encontrados y corregidos al verlo en pantalla
-- Texto negro sobre fondo oscuro (faltaba  en el tema) y esquema de color M3 incompleto (barra de navegación/chips lavanda).
+- Texto negro sobre fondo oscuro (faltaba `Surface` en el tema) y esquema de color M3 incompleto (barra de navegación y chips lavanda).
 - La cabecera de «Mis álbumes» quedaba bajo la barra de título (no contaba el inset de estado).
 - El arrastre del recorte aplicaba solo el último delta (estado obsoleto entre eventos): ahora acumula.
 - Salir del visor tras «girar» un vídeo dejaba toda la app en horizontal: se restablece la orientación al cerrar.
 - Los interruptores de ajustes solo respondían al pulsar el propio interruptor (ahora toda la fila) y apagados no se veían.
 
-Rendimiento (emulador, APK release, **10 128 imágenes reales** de 480×360 sembradas con , miniaturas incluidas)
-- 25 deslizamientos rápidos de punta a punta en la biblioteca, : 1,71 % de frames lentos (15 de ≈ 880); percentiles de frame 50/90/95/99 = 8/16/16/18 ms (límite de 16,6 ms a 60 Hz); GPU 7/15/16/16 ms; 0 vsync perdidos. Memoria: Java heap ≈ 20 MB, Native ≈ 160 MB.
+Rendimiento (emulador, APK release, **10 128 imágenes reales** de 480×360 sembradas con `tools/seed-perf.py`, miniaturas incluidas)
+- 25 deslizamientos rápidos de punta a punta en la biblioteca, `dumpsys gfxinfo`: 1,71 % de frames lentos (15 de ≈ 880); percentiles de frame 50/90/95/99 = 8/16/16/18 ms (límite de 16,6 ms a 60 Hz); GPU 7/15/16/16 ms; 0 vsync perdidos. Memoria: Java heap ≈ 20 MB, Native ≈ 160 MB.
 - Dominio en JVM con 50 000 elementos: línea de tiempo 7 ms, resumen de álbumes 12 ms, búsqueda 25 ms; editor completo sobre 12 MP ≈ 1,0 s.
-- Son cifras del emulador (GPU/CPU emuladas), útiles para comparar versiones, no para prometer fluidez en un móvil concreto.
+- Son cifras del emulador (GPU/CPU emuladas): sirven para comparar versiones, no para prometer fluidez en un móvil concreto.
 
 Limitaciones que siguen abiertas (lo único)
 - **Móvil físico**: no probado (ni rendimiento, ni cámara real, ni sincronización con otras apps). Es la única verificación pendiente de Adrián.
-- No se recorrieron a mano en pantalla: portada, reordenar y ocultar álbum (verificados por  y por los tests de Room/pantalla, no con el dedo); la escala de animación del sistema y la «calidad» de miniaturas (solo comprobado que el tema las expone a la UI).
-- Editor: vista previa en CPU a 1280 px; exportación hasta 4096 px de lado mayor (); no se conserva EXIF en copias PNG.
+- No se recorrieron a mano en pantalla: portada, reordenar y ocultar álbum (verificados por `AlbumsViewModelTest` y los tests de Room/pantalla, no con el dedo); la escala de animación del sistema y la «calidad» de miniaturas (solo comprobado que el tema las expone a la UI).
+- Editor: vista previa en CPU a 1280 px; exportación hasta 4096 px de lado mayor (`largeHeap`); no se conserva EXIF en copias PNG.
 - Álbumes ocultos: solo se ocultan de la lista (las fotos siguen en la biblioteca); favoritos y álbumes son locales a Lumina (Room) y no se sincronizan con otras apps.
 - APK release firmado con la clave de depuración: sirve para probar, no para publicar.
