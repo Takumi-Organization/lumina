@@ -1,0 +1,13 @@
+<resources>
+    <string name="tab_search">Buscar</string>
+    <string name="search_hint">Nombre, carpeta, mes, año, «vídeos»…</string>
+    <string name="search_clear">Borrar búsqueda</string>
+    <string name="search_s_videos">vídeos</string>
+    <string name="search_s_screenshots">capturas</string>
+    <string name="search_s_favorites">favoritas</string>
+    <string name="search_s_photos">fotos</string>
+    <string name="search_idle_title">Busca por metadatos</string>
+    <string name="search_idle_body">Escribe parte del nombre o de la carpeta y combina con «vídeos», «fotos», «capturas», «favoritas», un mes o un año. No se reconoce el contenido de las imágenes.</string>
+    <string name="search_none_title">Sin resultados</string>
+    <string name="search_none_body">Prueba con menos palabras o quita algún filtro.</string>
+</resources>

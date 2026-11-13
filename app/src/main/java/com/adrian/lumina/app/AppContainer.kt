@@ -13,6 +13,8 @@ import com.adrian.lumina.data.media.MediaStoreSource
 import com.adrian.lumina.domain.repository.AlbumRepository
 import com.adrian.lumina.domain.repository.FavoritesRepository
 import com.adrian.lumina.domain.repository.MediaRepository
+import com.adrian.lumina.domain.repository.SearchProvider
+import com.adrian.lumina.domain.usecase.MetadataSearchProvider
 
 /** Inyección manual: pocas dependencias, sin framework (ver docs/ARQUITECTURA.md). */
 class AppContainer(context: Context) {
@@ -23,4 +25,5 @@ class AppContainer(context: Context) {
     val actions = MediaActions(context)
     val exif = ExifReader(context)
     val images = ImageCodec(context)
+    val search: SearchProvider = MetadataSearchProvider()
 }

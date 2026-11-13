@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PhotoAlbum
 import androidx.compose.material.icons.rounded.PhotoLibrary
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -53,6 +54,9 @@ import com.adrian.lumina.ui.albums.AlbumsScreen
 import com.adrian.lumina.ui.albums.AlbumsViewModel
 import com.adrian.lumina.ui.albums.ConfirmDialog
 import com.adrian.lumina.ui.editor.EditorScreen
+import com.adrian.lumina.ui.search.SearchScreen
+import com.adrian.lumina.ui.search.SearchUi
+import com.adrian.lumina.ui.search.SearchViewModel
 import com.adrian.lumina.ui.editor.EditorViewModel
 import com.adrian.lumina.domain.model.MediaItem
 import com.adrian.lumina.domain.model.TimelineEntry
@@ -64,7 +68,7 @@ import com.adrian.lumina.ui.gallery.GalleryUiState
 import com.adrian.lumina.ui.gallery.GalleryViewModel
 import com.adrian.lumina.ui.viewer.ViewerScreen
 
-enum class Section { LIBRARY, ALBUMS }
+enum class Section { LIBRARY, ALBUMS, SEARCH }
 
 private sealed interface AlbumDialog {
     data class New(val ids: Set<Long>) : AlbumDialog
@@ -96,6 +100,11 @@ fun LuminaHost(container: AppContainer) {
     val albumDetail by albumsVm.detail.collectAsStateWithLifecycle()
     val albumSelection by albumsVm.selection.collectAsStateWithLifecycle()
     val albumSort by albumsVm.sort.collectAsStateWithLifecycle()
+    val searchVm: SearchViewModel = viewModel(
+        factory = viewModelFactory { initializer { SearchViewModel(container.media, container.favorites, container.search) } }
+    )
+    val searchQuery by searchVm.query.collectAsStateWithLifecycle()
+    val searchState by searchVm.state.collectAsStateWithLifecycle()
     var section by rememberSaveable { mutableStateOf(Section.LIBRARY) }
     var editing by remember { mutableStateOf<MediaItem?>(null) }
     var dialog by remember { mutableStateOf<AlbumDialog?>(null) }
@@ -106,7 +115,12 @@ fun LuminaHost(container: AppContainer) {
     }
     // El visor recorre lo que se está viendo: el álbum abierto o, si no, la biblioteca.
     val inAlbum = section == Section.ALBUMS && albumDetail != null
-    val items: List<MediaItem> = if (inAlbum) albumDetail?.items.orEmpty() else galleryItems
+    val inSearch = section == Section.SEARCH
+    val items: List<MediaItem> = when {
+        inAlbum -> albumDetail?.items.orEmpty()
+        inSearch -> (searchState as? SearchUi.Results)?.items.orEmpty()
+        else -> galleryItems
+    }
     val entryIndexById = remember(timeline) {
         timeline?.entries?.withIndex()?.mapNotNull { (i, e) -> (e as? TimelineEntry.Cell)?.let { it.item.id to i } }?.toMap().orEmpty()
     }
@@ -169,6 +183,7 @@ fun LuminaHost(container: AppContainer) {
                                     allSelectedFavorite = selection.isNotEmpty() && vm.allSelectedAreFavorite(),
                                     actions = actions, gridState = gridState,
                                 )
+                                section == Section.SEARCH -> SearchScreen(searchQuery, searchState, searchVm::setQuery, vm::openViewer)
                                 albumDetail != null -> AlbumDetailScreen(
                                     detail = albumDetail!!, selection = albumSelection, sort = albumSort,
                                     actions = AlbumDetailActions(
@@ -199,6 +214,11 @@ fun LuminaHost(container: AppContainer) {
                                 icon = { Icon(Icons.Rounded.PhotoAlbum, null) }, label = { Text(stringResource(R.string.tab_albums)) },
                                 modifier = Modifier.testTag("tab-albums"),
                             )
+                            NavigationBarItem(
+                                selected = section == Section.SEARCH, onClick = { section = Section.SEARCH },
+                                icon = { Icon(Icons.Rounded.Search, null) }, label = { Text(stringResource(R.string.tab_search)) },
+                                modifier = Modifier.testTag("tab-search"),
+                            )
                         }
                     }
                 } else {
@@ -208,7 +228,7 @@ fun LuminaHost(container: AppContainer) {
                         onClose = vm::closeViewer,
                         onPageSettled = { id ->
                             vm.openViewer(id)
-                            if (inAlbum) return@ViewerScreen
+                            if (inAlbum || inSearch) return@ViewerScreen
                             // Al volver, la celda de destino debe estar visible para animar hacia ella.
                             val idx = entryIndexById[id]
                             if (idx != null && gridState.layoutInfo.visibleItemsInfo.none { it.index == idx }) {

@@ -1,0 +1,13 @@
+<resources>
+    <string name="tab_search">Search</string>
+    <string name="search_hint">Name, folder, month, year, “videos”…</string>
+    <string name="search_clear">Clear search</string>
+    <string name="search_s_videos">videos</string>
+    <string name="search_s_screenshots">screenshots</string>
+    <string name="search_s_favorites">favorites</string>
+    <string name="search_s_photos">photos</string>
+    <string name="search_idle_title">Search by metadata</string>
+    <string name="search_idle_body">Type part of a name or folder and combine with “videos”, “photos”, “screenshots”, “favorites”, a month or a year. Image content is not recognized.</string>
+    <string name="search_none_title">No results</string>
+    <string name="search_none_body">Try fewer words or drop a filter.</string>
+</resources>
