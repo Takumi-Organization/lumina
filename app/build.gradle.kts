@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.adrian.lumina"
-        minSdk = 29
+        minSdk = 30
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.exifinterface)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)

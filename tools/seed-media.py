@@ -22,6 +22,16 @@ for i in range(n):
     d.text((40, 40), f"#{i} {when:%Y-%m-%d}", fill=(255, 255, 255))
     ex = img.getexif(); ex[306] = when.strftime("%Y:%m:%d %H:%M:%S")
     sub = ex.get_ifd(0x8769); sub[36867] = when.strftime("%Y:%m:%d %H:%M:%S")
+    if i % 2 == 0:  # la mitad con datos de cámara y GPS (Córdoba, con deriva)
+        ex[271], ex[272] = "Lumina Labs", f"Prueba {1 + i % 3}"
+        sub[33434] = 1 / random.choice([60, 125, 250, 500])  # ExposureTime
+        sub[33437] = random.choice([1.8, 2.0, 2.8])        # FNumber
+        sub[34855] = random.choice([100, 200, 400, 800])      # ISO
+        sub[37386] = random.choice([5.4, 6.9, 24.0])       # FocalLength
+        gps = ex.get_ifd(0x8825)
+        lat, lon = 37.8882 + random.uniform(-.05, .05), 4.7794 + random.uniform(-.05, .05)
+        dms = lambda v: (float(int(abs(v))), float(int(abs(v) % 1 * 60)), round(abs(v) * 3600 % 60, 2))
+        gps[1], gps[2], gps[3], gps[4] = ("N" if lat >= 0 else "S"), dms(lat), ("E" if lon >= 0 else "W"), dms(lon)
     shot = i % 15 == 0
     name = f"{'Screenshot' if shot else 'IMG'}_{when:%Y%m%d_%H%M%S}_{i}.jpg"
     p = os.path.join(tmp, name); img.save(p, quality=85, exif=ex)

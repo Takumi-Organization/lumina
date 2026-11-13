@@ -18,14 +18,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.adrian.lumina.R
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
+import com.adrian.lumina.ui.LuminaHost
 import com.adrian.lumina.ui.components.EmptyState
-import com.adrian.lumina.ui.gallery.GalleryActions
-import com.adrian.lumina.ui.gallery.GalleryScreen
-import com.adrian.lumina.ui.gallery.GalleryViewModel
 import com.adrian.lumina.ui.theme.LuminaTheme
 
 class MainActivity : ComponentActivity() {
@@ -34,26 +28,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val container = (application as LuminaApp).container
         setContent {
-            LuminaTheme {
-                PermissionGate {
-                    val vm: GalleryViewModel = viewModel(
-                        factory = viewModelFactory { initializer { GalleryViewModel(container.media, container.favorites) } }
-                    )
-                    val state by vm.state.collectAsStateWithLifecycle()
-                    val selection by vm.selection.collectAsStateWithLifecycle()
-                    val columns by vm.columns.collectAsStateWithLifecycle()
-                    val favoritesOnly by vm.favoritesOnly.collectAsStateWithLifecycle()
-                    GalleryScreen(
-                        state = state, selection = selection, columns = columns, favoritesOnly = favoritesOnly,
-                        allSelectedFavorite = selection.isNotEmpty() && vm.allSelectedAreFavorite(),
-                        actions = GalleryActions(
-                            onToggle = vm::toggle, onToggleDay = vm::toggleGroup,
-                            onClearSelection = vm::clearSelection, onFavoriteSelected = vm::toggleFavoriteOfSelection,
-                            onFavoritesOnly = vm::setFavoritesOnly, onColumns = vm::setColumns,
-                        ),
-                    )
-                }
-            }
+            LuminaTheme { PermissionGate { LuminaHost(container) } }
         }
     }
 }

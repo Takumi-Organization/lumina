@@ -27,7 +27,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,6 +62,8 @@ class GalleryActions(
     val onFavoritesOnly: (Boolean) -> Unit = {},
     val onColumns: (Int) -> Unit = {},
     val onOpen: (Long) -> Unit = {},
+    val onShareSelected: () -> Unit = {},
+    val onDeleteSelected: () -> Unit = {},
 )
 
 private val TopInset = 104.dp
@@ -148,6 +152,12 @@ private fun SelectionBar(count: Int, allFavorite: Boolean, actions: GalleryActio
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f).testTag("selection-count"),
         )
+        IconButton(onClick = actions.onShareSelected, modifier = Modifier.testTag("selection-share")) {
+            Icon(Icons.Rounded.Share, stringResource(R.string.share))
+        }
+        IconButton(onClick = actions.onDeleteSelected, modifier = Modifier.testTag("selection-delete")) {
+            Icon(Icons.Rounded.Delete, stringResource(R.string.delete))
+        }
         IconButton(onClick = actions.onFavoriteSelected, modifier = Modifier.testTag("selection-favorite")) {
             Icon(
                 if (allFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,

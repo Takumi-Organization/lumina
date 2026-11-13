@@ -34,6 +34,15 @@ class GalleryViewModel(
     val columns = MutableStateFlow(DEFAULT_COLUMNS)
     val selection = MutableStateFlow<Set<Long>>(emptySet())
 
+    /** Id del elemento abierto en el visor (null = cuadrícula). Se actualiza al cambiar de página. */
+    val viewerId = MutableStateFlow<Long?>(null)
+    fun openViewer(id: Long) { viewerId.value = id }
+    fun closeViewer() { viewerId.value = null }
+
+    fun toggleFavorite(item: MediaItem) {
+        viewModelScope.launch { favorites.setFavorite(listOf(item.id), !item.isFavorite) }
+    }
+
     /** Todos los medios con el indicador de favorito de Lumina ya aplicado. */
     private val items: StateFlow<List<MediaItem>?> =
         combine(media.observeAll(), favorites.observeIds()) { all, favs ->

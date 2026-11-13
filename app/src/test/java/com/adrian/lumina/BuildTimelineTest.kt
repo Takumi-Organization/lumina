@@ -81,3 +81,27 @@ class ScrubTest {
         assertEquals(setOf(1L), setOf(1L).toggleGroup(emptyList()))
     }
 }
+
+class ExifFormatTest {
+    @Test fun exposure() {
+        assertEquals("1/250 s", formatExposure(0.004))
+        assertEquals("1/2 s", formatExposure(0.5))
+        assertEquals("2 s", formatExposure(2.0))
+        assertEquals("1.3 s", formatExposure(1.3))
+    }
+    @Test fun aperture() { assertEquals("f/1.8", formatAperture(1.8)); assertEquals("f/2", formatAperture(2.0)) }
+    @Test fun focal() { assertEquals("26 mm", formatFocalLength(26.0)); assertEquals("5.4 mm", formatFocalLength(5.4)) }
+    @Test fun coords() {
+        assertEquals("40.4168° N, 3.7038° W", formatCoords(40.4168, -3.7038))
+        assertEquals("33.8688° S, 151.2093° E", formatCoords(-33.8688, 151.2093))
+    }
+    @Test fun bytes() {
+        val en = java.util.Locale.US
+        assertEquals("999 B", formatBytes(999, en)); assertEquals("1.5 kB", formatBytes(1500, en))
+        assertEquals("2.9 MB", formatBytes(2_900_000, en)); assertEquals("1.2 GB", formatBytes(1_200_000_000, en))
+    }
+    @Test fun megapixels() {
+        assertEquals(12.0, megapixels(4000, 3000)!!, 0.001)
+        assertEquals(null, megapixels(0, 100))
+    }
+}

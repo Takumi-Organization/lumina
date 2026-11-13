@@ -22,4 +22,23 @@
     <string name="permission_title">Lumina needs to see your photos</string>
     <string name="permission_body">Everything stays on your device. Media is only read to show it to you; nothing is uploaded.</string>
     <string name="permission_action">Grant access</string>
+    <string name="back">Back</string>
+    <string name="share">Share</string>
+    <string name="delete">Delete</string>
+    <string name="info">Info</string>
+    <string name="play_video">Play video</string>
+    <string name="info_name">Name</string>
+    <string name="info_date">Date</string>
+    <string name="info_resolution">Resolution</string>
+    <string name="info_size">Size</string>
+    <string name="info_folder">Folder</string>
+    <string name="info_camera">Camera</string>
+    <string name="info_exposure">Exposure</string>
+    <string name="info_location">Location</string>
+    <string name="info_location_allow">Allow reading photo locations</string>
+    <string name="info_location_none">No location data</string>
+    <string name="info_open_map">Open in maps</string>
+    <string name="info_duration">Duration</string>
+    <string name="info_megapixels">%1$d × %2$d · %3$s MP</string>
+    <string name="viewer_counter">%1$d / %2$d</string>
 </resources>

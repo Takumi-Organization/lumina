@@ -45,9 +45,13 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.adrian.lumina.data.media.Thumb
 import com.adrian.lumina.domain.model.MediaItem
+import com.adrian.lumina.ui.components.LocalSharedScopes
+import com.adrian.lumina.ui.components.mediaKey
 import com.adrian.lumina.ui.theme.LocalAnimationsEnabled
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun GalleryCell(
     item: MediaItem,
@@ -64,9 +68,16 @@ fun GalleryCell(
         if (animate) spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium) else snap()
     val scale by animateFloatAsState(target, spec, label = "cellScale")
     val lumen = MaterialTheme.colorScheme.primary
+    val scopes = LocalSharedScopes.current
+    val shared = if (scopes != null) with(scopes.shared) {
+        Modifier.sharedBounds(
+            rememberSharedContentState(mediaKey(item.id)), scopes.visibility,
+        )
+    } else Modifier
     Box(
         modifier
             .aspectRatio(1f)
+            .then(shared)
             .testTag("cell-${item.id}")
             .semantics { this.selected = selected; contentDescription = item.name }
             .combinedClickable(
