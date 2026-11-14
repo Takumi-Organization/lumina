@@ -1,0 +1,10 @@
+<resources>
+    <string name="library_retry">Reintentar</string>
+    <string name="library_permissions">Ajustes de permisos</string>
+    <string name="library_detail">Lectura de MediaStore: %1$s</string>
+    <string name="library_failed_title">No se pudo leer tu biblioteca</string>
+    <string name="library_failed_body">Android devolvió un error al leer fotos y vídeos: %1$s</string>
+    <string name="access_partial_title">Solo ves una parte de tu biblioteca</string>
+    <string name="access_partial_body">Diste acceso a fotos seleccionadas o solo a un tipo de archivo. Concede el acceso completo para ver todo.</string>
+    <string name="access_grant_all">Dar acceso a todo</string>
+</resources>

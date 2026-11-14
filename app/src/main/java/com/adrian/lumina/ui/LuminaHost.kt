@@ -26,6 +26,15 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.adrian.lumina.app.AppContainer
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import com.adrian.lumina.domain.model.MediaAccess
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -87,7 +96,12 @@ private val BuildConfigVersion = "0.1.0"
 /** Une cuadrícula y visor en un solo árbol para poder animar la transición compartida. */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun LuminaHost(container: AppContainer, settings: AppSettings = AppSettings()) {
+fun LuminaHost(
+    container: AppContainer,
+    settings: AppSettings = AppSettings(),
+    access: MediaAccess = MediaAccess.FULL,
+    onRequestFullAccess: () -> Unit = {},
+) {
     val vm: GalleryViewModel = viewModel(
         factory = viewModelFactory { initializer { GalleryViewModel(container.media, container.favorites) } }
     )
@@ -118,6 +132,7 @@ fun LuminaHost(container: AppContainer, settings: AppSettings = AppSettings()) {
     val storage by settingsVm.storage.collectAsStateWithLifecycle()
     LaunchedEffect(settings.defaultColumns) { vm.setColumns(settings.defaultColumns) }
     var section by rememberSaveable { mutableStateOf(Section.LIBRARY) }
+    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { container.media.refresh() }
     var editing by remember { mutableStateOf<MediaItem?>(null) }
     var dialog by remember { mutableStateOf<AlbumDialog?>(null) }
 
@@ -160,6 +175,8 @@ fun LuminaHost(container: AppContainer, settings: AppSettings = AppSettings()) {
         onShareSelected = { share(items.filter { it.id in selection }) },
         onDeleteSelected = { trash(items.filter { it.id in selection }) },
         onAddToAlbum = { dialog = AlbumDialog.Pick(selection) },
+        onRetry = vm::retry,
+        onOpenPermissions = { com.adrian.lumina.app.openAppSettings(context) },
     )
 
     when (val d = dialog) {
@@ -218,6 +235,16 @@ fun LuminaHost(container: AppContainer, settings: AppSettings = AppSettings()) {
                                     onCreate = { dialog = AlbumDialog.New(emptySet()) }, onShowHidden = albumsVm::setShowHidden,
                                 )
                             }
+                        }
+                        if (access == MediaAccess.PARTIAL && selection.isEmpty()) Row(
+                            Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(horizontal = 16.dp, vertical = 8.dp).testTag("partial-access-banner"),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(Modifier.weight(1f)) {
+                                Text(stringResource(R.string.access_partial_title), style = MaterialTheme.typography.labelMedium)
+                                Text(stringResource(R.string.access_partial_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            TextButton(onRequestFullAccess, modifier = Modifier.testTag("grant-full-access")) { Text(stringResource(R.string.access_grant_all)) }
                         }
                         if (selection.isEmpty() && albumDetail == null) NavigationBar {
                             NavigationBarItem(

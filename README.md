@@ -24,6 +24,17 @@ python3 tools/seed-media.py emulator-5556 120   # siembra fotos/vídeos sintéti
 adb -s emulator-5556 install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
+## Importación de la biblioteca y diagnóstico (2026-11-14)
+
+Síntoma reportado en un Xiaomi: Lumina no muestra ningún archivo. Causas revisadas y qué se hizo:
+- **Estado de permisos mal detectado.** Antes cualquier permiso (incluido «fotos seleccionadas» de Android 14+, o solo fotos sin vídeos) contaba como acceso y no se recalculaba al volver de los ajustes del sistema. Ahora `mediaAccess()` distingue NINGUNO / PARCIAL / COMPLETO, se recalcula en cada `onResume` y, si cambia, se vuelve a leer MediaStore. Con acceso parcial hay un aviso en la biblioteca con «Dar acceso a todo» (pide los permisos y, si Android ya no muestra el diálogo, abre los ajustes de la app).
+- **Consulta que falla en silencio.** La lectura usaba solo la colección de Archivos del volumen `external` con una sola proyección: una columna rechazada o una excepción dejaba la lista vacía sin explicación. Ahora se consulta Imágenes y Vídeo (volumen `external`, luego `external_primary`) y, si siguen vacías, Archivos incluyendo filas sin clasificar cuyo MIME es de imagen o vídeo; ante `IllegalArgumentException` se reintenta con columnas mínimas; las columnas ausentes no tumban la lectura.
+- **Fallo visible.** Cualquier excepción o resultado vacío queda en `MediaRepository.status` (con el recuento por fuente) y la biblioteca lo muestra («No se pudo leer tu biblioteca…» o «Lectura de MediaStore: external/imágenes=0; …») con «Reintentar» y «Ajustes de permisos». Además hay log con etiqueta `LuminaMedia` (`adb logcat -s LuminaMedia`), que dice cuántos elementos dio cada fuente y la excepción si la hubo.
+- **Observador.** Una sola suscripción a toda la autoridad de MediaStore (`content://media`, con descendientes) y relectura al volver a la app; antes solo escuchaba la colección de Archivos.
+- Por diseño no aparecen: carpetas con `.nomedia`, archivos `IS_PENDING`, elementos en la papelera, perfiles de trabajo/otros usuarios, y cualquier archivo que MediaStore no indexe (Lumina no recorre el sistema de archivos).
+
+Verificación de este cambio: tests JVM de `mediaAccess()` y clasificación por MIME (en verde), `lintDebug` y `assembleDebug` sin errores. **No ejecutado** (sin emulador ni móvil disponibles en esta sesión): `ImportCoverageTest` (inserta PNG/WebP/GIF/HEIC/DNG/BMP, MP4/WebM/MKV/3GP, por Imágenes, Vídeo, Descargas y Archivos, y comprueba que salen en la biblioteca) y `LibraryDiagnosticsTest` (excepciones visibles, proyección mínima, cursor nulo, reintento tras conceder permiso, pantallas de error/vacío). Hay que lanzarlos con `connectedDebugAndroidTest` y, en el móvil, mirar `adb logcat -s LuminaMedia` tras abrir la app.
+
 ## Verificación (2026-11-14)
 
 Todo lo siguiente se ejecutó en el emulador compartido `emulator-5554` (Pixel_API36, Android 16) o en JVM; no hay prueba en móvil físico.

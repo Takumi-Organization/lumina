@@ -21,14 +21,19 @@ import kotlinx.coroutines.launch
 
 sealed interface GalleryUiState {
     data object Loading : GalleryUiState
-    data class Empty(val favoritesOnly: Boolean) : GalleryUiState
+    /** [detail]: de dónde se leyó y cuántas filas dio cada fuente (diagnóstico para el usuario). */
+    data class Empty(val favoritesOnly: Boolean, val detail: String = "") : GalleryUiState
+    /** La lectura de MediaStore falló: se muestra el motivo en vez de una pantalla vacía muda. */
+    data class Failed(val message: String, val detail: String = "") : GalleryUiState
     data class Content(val timeline: Timeline, val total: Int) : GalleryUiState
 }
 
 class GalleryViewModel(
-    media: MediaRepository,
+    private val mediaRepo: MediaRepository,
     private val favorites: FavoritesRepository,
 ) : ViewModel() {
+    private val media = mediaRepo
+    fun retry() = media.refresh()
 
     val favoritesOnly = MutableStateFlow(false)
     val columns = MutableStateFlow(DEFAULT_COLUMNS)
@@ -50,12 +55,13 @@ class GalleryViewModel(
         }.flowOn(Dispatchers.Default)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    val state: StateFlow<GalleryUiState> = combine(items, favoritesOnly) { all, onlyFav ->
+    val state: StateFlow<GalleryUiState> = combine(items, favoritesOnly, media.status) { all, onlyFav, status ->
         when {
             all == null -> GalleryUiState.Loading
+            all.isEmpty() && status.error != null -> GalleryUiState.Failed(status.error, status.detail)
             else -> {
                 val shown = if (onlyFav) all.filter { it.isFavorite } else all
-                if (shown.isEmpty()) GalleryUiState.Empty(onlyFav)
+                if (shown.isEmpty()) GalleryUiState.Empty(onlyFav, status.detail)
                 else GalleryUiState.Content(buildTimeline(shown), shown.size)
             }
         }

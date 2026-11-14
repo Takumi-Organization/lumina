@@ -10,6 +10,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import com.adrian.lumina.domain.model.AppSettings
+import com.adrian.lumina.domain.model.MediaAccess
+import com.adrian.lumina.domain.model.mediaAccess
 import com.adrian.lumina.domain.model.ThemeMode
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -55,7 +57,11 @@ class MainActivity : ComponentActivity() {
             }
             // Los ajustes del sistema también cuentan: sin animaciones si la escala del sistema es 0.
             val systemAnimations = remember { Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f }
-            LuminaTheme(dark, s.animations && systemAnimations, s.haptics, s.thumbQuality.px) { PermissionGate { LuminaHost(container, s) } }
+            LuminaTheme(dark, s.animations && systemAnimations, s.haptics, s.thumbQuality.px) {
+                PermissionGate(onAccessChanged = { container.media.refresh() }) { access, requestFull ->
+                    LuminaHost(container, s, access, requestFull)
+                }
+            }
         }
     }
 }
@@ -69,28 +75,52 @@ private fun mediaPermissions(): Array<String> = when {
     else -> arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
 }
 
-/** Acceso completo o parcial (API 34 «fotos seleccionadas») cuentan como concedido; en parcial solo se ve lo elegido. */
-private fun hasAccess(context: android.content.Context): Boolean {
+/** Nivel de acceso real: completo, parcial (fotos seleccionadas / solo un tipo) o ninguno. */
+private fun currentAccess(context: android.content.Context): MediaAccess {
     fun granted(p: String) = ContextCompat.checkSelfPermission(context, p) == PackageManager.PERMISSION_GRANTED
-    return when {
-        Build.VERSION.SDK_INT >= 33 ->
-            (granted(Manifest.permission.READ_MEDIA_IMAGES) || granted(Manifest.permission.READ_MEDIA_VIDEO)) ||
-                (Build.VERSION.SDK_INT >= 34 && granted(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED))
-        else -> granted(Manifest.permission.READ_EXTERNAL_STORAGE)
+    return mediaAccess(
+        sdk = Build.VERSION.SDK_INT,
+        images = granted(Manifest.permission.READ_MEDIA_IMAGES), video = granted(Manifest.permission.READ_MEDIA_VIDEO),
+        userSelected = Build.VERSION.SDK_INT >= 34 && granted(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED),
+        legacyRead = granted(Manifest.permission.READ_EXTERNAL_STORAGE),
+    )
+}
+
+/** Abre la pantalla de permisos de Lumina en los ajustes del sistema (último recurso si Android ya no muestra el diálogo). */
+fun openAppSettings(context: android.content.Context) {
+    runCatching {
+        context.startActivity(
+            android.content.Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.fromParts("package", context.packageName, null))
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
     }
 }
 
+/**
+ * Pide los permisos y entrega el nivel de acceso a [content]. El nivel se recalcula al volver a la app (el usuario puede
+ * haberlo cambiado en los ajustes del sistema) y, si cambia, se vuelve a leer MediaStore.
+ */
 @Composable
-private fun PermissionGate(content: @Composable () -> Unit) {
+private fun PermissionGate(onAccessChanged: () -> Unit, content: @Composable (MediaAccess, () -> Unit) -> Unit) {
     val context = LocalContext.current
-    var allowed by remember { mutableStateOf(hasAccess(context)) }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-        allowed = hasAccess(context)
+    var access by remember { mutableStateOf(currentAccess(context)) }
+    fun recheck() {
+        val now = currentAccess(context)
+        if (now != access) { android.util.Log.i("LuminaMedia", "Acceso a medios: $access -> $now"); access = now; onAccessChanged() }
     }
-    if (allowed) content() else EmptyState(
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        val before = access
+        recheck()
+        // Si el sistema no mostró el diálogo (denegado antes) y el acceso sigue sin ser completo, se lleva al usuario a los ajustes.
+        if (before == access && access != MediaAccess.FULL) openAppSettings(context)
+    }
+    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { recheck() }
+    if (access != MediaAccess.NONE) content(access) { launcher.launch(mediaPermissions()) } else EmptyState(
         title = stringResource(R.string.permission_title),
         body = stringResource(R.string.permission_body),
         actionLabel = stringResource(R.string.permission_action),
         onAction = { launcher.launch(mediaPermissions()) },
+        secondaryLabel = stringResource(R.string.library_permissions),
+        onSecondary = { openAppSettings(context) },
     )
 }

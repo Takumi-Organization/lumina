@@ -23,7 +23,10 @@ import androidx.compose.ui.unit.dp
 
 /** Ilustración propia: marco de fotografía vacío con un punto de luz. */
 @Composable
-fun EmptyState(title: String, body: String, actionLabel: String? = null, onAction: () -> Unit = {}) {
+fun EmptyState(
+    title: String, body: String, actionLabel: String? = null, onAction: () -> Unit = {},
+    secondaryLabel: String? = null, onSecondary: () -> Unit = {}, detail: String? = null,
+) {
     val line = MaterialTheme.colorScheme.outline
     val lumen = MaterialTheme.colorScheme.primary
     Column(
@@ -47,9 +50,16 @@ fun EmptyState(title: String, body: String, actionLabel: String? = null, onActio
         Text(title, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
         Spacer(Modifier.height(8.dp))
         Text(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+        if (detail != null) {
+            Spacer(Modifier.height(12.dp))
+            Text(detail, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+        }
         if (actionLabel != null) {
             Spacer(Modifier.height(24.dp))
             Button(onClick = onAction, shape = RoundedCornerShape(10.dp)) { Text(actionLabel) }
+        }
+        if (secondaryLabel != null) {
+            androidx.compose.material3.TextButton(onClick = onSecondary) { Text(secondaryLabel) }
         }
     }
 }

@@ -66,6 +66,8 @@ class GalleryActions(
     val onShareSelected: () -> Unit = {},
     val onDeleteSelected: () -> Unit = {},
     val onAddToAlbum: () -> Unit = {},
+    val onRetry: () -> Unit = {},
+    val onOpenPermissions: () -> Unit = {},
 )
 
 private val TopInset = 104.dp
@@ -94,6 +96,16 @@ fun GalleryScreen(
             ) else EmptyState(
                 title = stringResource(R.string.empty_library_title),
                 body = stringResource(R.string.empty_library_body),
+                detail = state.detail.takeIf { it.isNotBlank() }?.let { stringResource(R.string.library_detail, it) },
+                actionLabel = stringResource(R.string.library_retry), onAction = actions.onRetry,
+                secondaryLabel = stringResource(R.string.library_permissions), onSecondary = actions.onOpenPermissions,
+            )
+            is GalleryUiState.Failed -> EmptyState(
+                title = stringResource(R.string.library_failed_title),
+                body = stringResource(R.string.library_failed_body, state.message),
+                detail = state.detail.takeIf { it.isNotBlank() }?.let { stringResource(R.string.library_detail, it) },
+                actionLabel = stringResource(R.string.library_retry), onAction = actions.onRetry,
+                secondaryLabel = stringResource(R.string.library_permissions), onSecondary = actions.onOpenPermissions,
             )
             is GalleryUiState.Content -> {
                 Grid(state, selection, columns, actions, gridState, pad)
