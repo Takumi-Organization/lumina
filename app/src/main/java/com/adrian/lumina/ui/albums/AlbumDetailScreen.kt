@@ -3,6 +3,7 @@ package com.adrian.lumina.ui.albums
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.statusBars
@@ -19,12 +20,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.Sort
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.FavoriteBorder
-import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Sort
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -78,14 +79,15 @@ fun AlbumDetailScreen(
             columns = GridCells.Fixed(3),
             modifier = Modifier.fillMaxSize().navigationBarsPadding().testTag("album-grid"),
             contentPadding = PaddingValues(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 72.dp, bottom = 24.dp, start = 2.dp, end = 2.dp),
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            horizontalArrangement = Arrangement.spacedBy(3.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
         ) {
             items(detail.items, key = { it.id }) { item ->
                 GalleryCell(
                     item, selected = item.id in selection, selecting = selecting,
                     onClick = { if (selecting) actions.onToggle(item.id) else actions.onOpenItem(item.id) },
                     onLongClick = { if (manual) actions.onToggle(item.id) },
+                    modifier = Modifier.aspectRatio(1f),
                 )
             }
         }
@@ -103,7 +105,7 @@ private fun TopBar(detail: AlbumDetail, sort: AlbumSort, actions: AlbumDetailAct
         Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background).statusBarsPadding().padding(horizontal = 8.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = actions.onBack, modifier = Modifier.testTag("album-back")) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.back)) }
+        IconButton(onClick = actions.onBack, modifier = Modifier.testTag("album-back")) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back)) }
         Column(Modifier.weight(1f)) {
             val title = when (val r = detail.ref) {
                 is AlbumRef.Manual -> album?.name.orEmpty()
@@ -116,7 +118,7 @@ private fun TopBar(detail: AlbumDetail, sort: AlbumSort, actions: AlbumDetailAct
             Text(sub, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
         }
         Box {
-            IconButton(onClick = { sortMenu = true }, modifier = Modifier.testTag("album-sort")) { Icon(Icons.AutoMirrored.Rounded.Sort, stringResource(R.string.sort_title)) }
+            IconButton(onClick = { sortMenu = true }, modifier = Modifier.testTag("album-sort")) { Icon(Icons.AutoMirrored.Outlined.Sort, stringResource(R.string.sort_title)) }
             DropdownMenu(sortMenu, { sortMenu = false }) {
                 AlbumSort.entries.forEach { s ->
                     DropdownMenuItem(
@@ -134,12 +136,12 @@ private fun TopBar(detail: AlbumDetail, sort: AlbumSort, actions: AlbumDetailAct
         if (album != null) {
             IconButton(onClick = actions.onToggleFavorite, modifier = Modifier.testTag("album-favorite")) {
                 Icon(
-                    if (album.isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                    if (album.isFavorite) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                     stringResource(R.string.favorite), tint = MaterialTheme.colorScheme.primary,
                 )
             }
             Box {
-                IconButton(onClick = { menu = true }, modifier = Modifier.testTag("album-menu")) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.info)) }
+                IconButton(onClick = { menu = true }, modifier = Modifier.testTag("album-menu")) { Icon(Icons.Outlined.MoreVert, stringResource(R.string.info)) }
                 DropdownMenu(menu, { menu = false }) {
                     DropdownMenuItem({ Text(stringResource(R.string.album_edit)) }, { menu = false; actions.onEdit() })
                     DropdownMenuItem(
@@ -167,10 +169,10 @@ private fun SelectionBar(count: Int, canMove: Boolean, actions: AlbumDetailActio
         Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).statusBarsPadding().padding(horizontal = 8.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = actions.onClearSelection) { Icon(Icons.Rounded.Close, stringResource(R.string.cancel_selection)) }
+        IconButton(onClick = actions.onClearSelection) { Icon(Icons.Outlined.Close, stringResource(R.string.cancel_selection)) }
         Text(pluralStringResource(R.plurals.selected_count, count, count), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
         Box {
-            IconButton(onClick = { menu = true }, modifier = Modifier.testTag("album-selection-menu")) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.info)) }
+            IconButton(onClick = { menu = true }, modifier = Modifier.testTag("album-selection-menu")) { Icon(Icons.Outlined.MoreVert, stringResource(R.string.info)) }
             DropdownMenu(menu, { menu = false }) {
                 if (canMove) {
                     DropdownMenuItem({ Text(stringResource(R.string.album_move_earlier)) }, { actions.onMoveSelected(-1) })

@@ -228,3 +228,29 @@ class CropGeometryTest {
 
     @Test fun fullRectIsFull() { assertTrue(full.isFull); assertFalse(CropRect(0.1f, 0f, 1f, 1f).isFull) }
 }
+
+class LooksTest {
+    @Test fun originalIsIdentityAndKeepsGeometry() {
+        val base = EditState(quarterTurns = 1, flipHorizontal = true, crop = CropRect(0.1f, 0.1f, 0.9f, 0.9f), contrast = 0.5f)
+        val o = Look.ORIGINAL.applyTo(base)
+        assertEquals(0f, o.contrast, 0f); assertEquals(1, o.quarterTurns); assertTrue(o.flipHorizontal); assertEquals(base.crop, o.crop)
+    }
+
+    @Test fun everyOtherLookChangesTheImage() {
+        val img = PixelImage(4, 4, IntArray(16) { (0xFF shl 24) or (it * 15 shl 16) or (200 - it * 9 shl 8) or 90 })
+        for (l in Look.entries.filter { it != Look.ORIGINAL }) assertFalse("$l", EditPipeline.apply(img, l.applyTo(EditState())) == img)
+    }
+
+    @Test fun monoRemovesColour() {
+        val out = EditPipeline.apply(PixelImage(1, 1, intArrayOf((0xFF shl 24) or (200 shl 16) or (60 shl 8) or 20)), Look.MONO.applyTo(EditState()))
+        val p = out[0, 0]
+        assertTrue(Math.abs(((p shr 16) and 0xFF) - ((p shr 8) and 0xFF)) <= 1)
+    }
+
+    @Test fun downscaleKeepsAspectAndNeverEnlarges() {
+        val img = PixelImage(400, 200, IntArray(80_000))
+        val s = img.downscale(100)
+        assertEquals(100, s.width); assertEquals(50, s.height)
+        assertSame(img, img.downscale(1000))
+    }
+}

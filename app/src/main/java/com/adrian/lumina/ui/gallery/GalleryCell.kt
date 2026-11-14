@@ -17,8 +17,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,8 +41,7 @@ import coil3.compose.AsyncImage
 import com.adrian.lumina.data.media.Thumb
 import com.adrian.lumina.domain.model.MediaItem
 import com.adrian.lumina.domain.usecase.formatClock
-import com.adrian.lumina.ui.components.LocalSharedScopes
-import com.adrian.lumina.ui.components.mediaKey
+import com.adrian.lumina.ui.components.mediaSharedBounds
 import com.adrian.lumina.ui.theme.LocalAnimationsEnabled
 import com.adrian.lumina.ui.theme.LocalHapticsEnabled
 import com.adrian.lumina.ui.theme.LocalThumbSize
@@ -69,13 +68,9 @@ fun GalleryCell(
     val scale by animateFloatAsState(if (selected) 0.86f else 1f, if (animate) Springs.bouncy() else snap(), label = "cellScale")
     val corner by animateFloatAsState(if (selected) 14f else 5f, if (animate) Springs.snappy() else snap(), label = "cellCorner")
     val accent = MaterialTheme.colorScheme.primary
-    val scopes = LocalSharedScopes.current
-    val shared = if (scopes != null) with(scopes.shared) {
-        Modifier.sharedBounds(rememberSharedContentState(mediaKey(item.id)), scopes.visibility)
-    } else Modifier
     Box(
         modifier
-            .then(shared)
+            .mediaSharedBounds(item.id, animate)
             .testTag("cell-${item.id}")
             .semantics { this.selected = selected; contentDescription = item.name }
             .combinedClickable(
@@ -104,7 +99,7 @@ fun GalleryCell(
                         .padding(start = 4.dp, end = 8.dp, top = 2.dp, bottom = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(Icons.Rounded.PlayArrow, null, tint = Color.White, modifier = Modifier.size(14.dp))
+                    Icon(Icons.Outlined.PlayArrow, null, tint = Color.White, modifier = Modifier.size(14.dp))
                     Text(formatClock(item.durationMs), color = Color.White, style = MaterialTheme.typography.labelSmall)
                 }
             }
@@ -124,7 +119,7 @@ fun GalleryCell(
                     .border(2.dp, Color.White, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                if (selected) Icon(Icons.Rounded.Check, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(15.dp))
+                if (selected) Icon(Icons.Outlined.Check, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(15.dp))
             }
         }
     }

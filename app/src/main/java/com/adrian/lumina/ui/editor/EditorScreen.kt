@@ -17,21 +17,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Redo
-import androidx.compose.material.icons.automirrored.rounded.Undo
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Flip
-import androidx.compose.material.icons.rounded.RotateLeft
-import androidx.compose.material.icons.rounded.RotateRight
-import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.automirrored.outlined.Redo
+import androidx.compose.material.icons.automirrored.outlined.Undo
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Flip
+import androidx.compose.material.icons.outlined.RotateLeft
+import androidx.compose.material.icons.outlined.RotateRight
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.draw.clip
+import com.adrian.lumina.ui.components.LuminaPill
+import com.adrian.lumina.ui.theme.SquircleShape
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -68,6 +71,12 @@ private fun label(a: Adjustment) = when (a) {
     Adjustment.VIGNETTE -> R.string.adj_vignette
 }
 
+private fun lookLabel(l: com.adrian.lumina.editor.Look) = when (l) {
+    com.adrian.lumina.editor.Look.ORIGINAL -> R.string.look_original; com.adrian.lumina.editor.Look.VIVID -> R.string.look_vivid
+    com.adrian.lumina.editor.Look.WARM -> R.string.look_warm; com.adrian.lumina.editor.Look.MONO -> R.string.look_mono
+    com.adrian.lumina.editor.Look.CINE -> R.string.look_cine; com.adrian.lumina.editor.Look.FADE -> R.string.look_fade
+}
+
 private val RATIOS = listOf(
     R.string.crop_original to null, R.string.crop_square to 1f, R.string.crop_4_3 to 4f / 3f,
     R.string.crop_3_4 to 3f / 4f, R.string.crop_16_9 to 16f / 9f, R.string.crop_9_16 to 9f / 16f,
@@ -100,22 +109,22 @@ fun EditorScreen(vm: EditorViewModel, onClose: () -> Unit, modifier: Modifier = 
         }
     }
 
-    Column(modifier.fillMaxSize().background(Color.Black).statusBarsPadding().navigationBarsPadding()) {
+    Column(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).statusBarsPadding().navigationBarsPadding()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton({ if (vm.hasChanges) confirmDiscard = true else close() }, modifier = Modifier.testTag("editor-close")) {
-                Icon(Icons.Rounded.Close, stringResource(R.string.back), tint = Color.White)
+                Icon(Icons.Outlined.Close, stringResource(R.string.back), tint = MaterialTheme.colorScheme.onBackground)
             }
             Box(Modifier.weight(1f))
             IconButton(vm::undo, enabled = canUndo, modifier = Modifier.testTag("editor-undo")) {
-                Icon(Icons.AutoMirrored.Rounded.Undo, stringResource(R.string.editor_undo), tint = if (canUndo) Color.White else Color.DarkGray)
+                Icon(Icons.AutoMirrored.Outlined.Undo, stringResource(R.string.editor_undo), tint = if (canUndo) Color.White else MaterialTheme.colorScheme.outline)
             }
             IconButton(vm::redo, enabled = canRedo, modifier = Modifier.testTag("editor-redo")) {
-                Icon(Icons.AutoMirrored.Rounded.Redo, stringResource(R.string.editor_redo), tint = if (canRedo) Color.White else Color.DarkGray)
+                Icon(Icons.AutoMirrored.Outlined.Redo, stringResource(R.string.editor_redo), tint = if (canRedo) Color.White else MaterialTheme.colorScheme.outline)
             }
             TextButton(vm::reset, enabled = !state.isIdentity) { Text(stringResource(R.string.editor_reset)) }
             if (save == SaveState.Saving) CircularProgressIndicator(Modifier.padding(horizontal = 12.dp).testTag("editor-saving"), strokeWidth = 2.dp)
             else TextButton(vm::save, enabled = !state.isIdentity, modifier = Modifier.testTag("editor-save")) {
-                Icon(Icons.Rounded.Check, null, Modifier.padding(end = 4.dp))
+                Icon(Icons.Outlined.Check, null, Modifier.padding(end = 4.dp))
                 Text(stringResource(R.string.editor_save_copy))
             }
         }
@@ -146,14 +155,24 @@ fun EditorScreen(vm: EditorViewModel, onClose: () -> Unit, modifier: Modifier = 
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         )
 
-        TabRow(tab, containerColor = Color.Black) {
-            Tab(tab == 0, { tab = 0 }, Modifier.testTag("editor-tab-adjust")) { Text(stringResource(R.string.editor_tab_adjust), Modifier.padding(12.dp)) }
-            Tab(tab == 1, { tab = 1 }, Modifier.testTag("editor-tab-crop")) { Text(stringResource(R.string.editor_tab_crop), Modifier.padding(12.dp)) }
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            LuminaPill(stringResource(R.string.editor_tab_adjust), tab == 0, Modifier.testTag("editor-tab-adjust")) { tab = 0 }
+            LuminaPill(stringResource(R.string.editor_tab_crop), tab == 1, Modifier.testTag("editor-tab-crop")) { tab = 1 }
         }
         if (tab == 0) {
-            Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Looks con vista previa real sobre tu foto.
+            val looks by vm.looks.collectAsStateWithLifecycle()
+            if (looks.isNotEmpty()) Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                looks.forEach { (look, bmp) ->
+                    Column(Modifier.clickable { vm.applyLook(look) }.testTag("look-${look.name}"), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Image(bmp.asImageBitmap(), null, Modifier.size(72.dp).clip(SquircleShape(16.dp)), contentScale = ContentScale.Crop)
+                        Text(stringResource(lookLabel(look)), style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(top = 4.dp))
+                    }
+                }
+            }
+            Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Adjustment.entries.forEach { a ->
-                    FilterChip(adjustment == a, { adjustment = a }, { Text(stringResource(label(a))) }, modifier = Modifier.testTag("adj-${a.name}"))
+                    LuminaPill(stringResource(label(a)), adjustment == a, Modifier.testTag("adj-${a.name}")) { adjustment = a }
                 }
             }
             val value = adjustment.get(state)
@@ -161,17 +180,18 @@ fun EditorScreen(vm: EditorViewModel, onClose: () -> Unit, modifier: Modifier = 
                 Slider(
                     value = value, onValueChange = { vm.adjust(adjustment, it) }, onValueChangeFinished = vm::commitDraft,
                     valueRange = adjustment.min..1f, modifier = Modifier.weight(1f).testTag("editor-slider"),
+                    colors = SliderDefaults.colors(thumbColor = Color.White, activeTrackColor = MaterialTheme.colorScheme.primary, inactiveTrackColor = MaterialTheme.colorScheme.outline),
                 )
-                Text("${(value * 100).toInt()}", Modifier.padding(start = 12.dp), color = Color.White)
+                Text("${(value * 100).toInt()}", Modifier.padding(start = 12.dp), style = MaterialTheme.typography.labelLarge)
             }
         } else {
             Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                RATIOS.forEach { (res, ratio) -> FilterChip(false, { vm.cropRatio(ratio) }, { Text(stringResource(res)) }) }
+                RATIOS.forEach { (res, ratio) -> LuminaPill(stringResource(res), false) { vm.cropRatio(ratio) } }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                IconButton({ vm.rotate(-1) }, modifier = Modifier.testTag("editor-rotate-left")) { Icon(Icons.Rounded.RotateLeft, stringResource(R.string.editor_rotate_left), tint = Color.White) }
-                IconButton({ vm.rotate(1) }, modifier = Modifier.testTag("editor-rotate-right")) { Icon(Icons.Rounded.RotateRight, stringResource(R.string.editor_rotate_right), tint = Color.White) }
-                IconButton(vm::flip, modifier = Modifier.testTag("editor-flip")) { Icon(Icons.Rounded.Flip, stringResource(R.string.editor_flip), tint = Color.White) }
+                IconButton({ vm.rotate(-1) }, modifier = Modifier.testTag("editor-rotate-left")) { Icon(Icons.Outlined.RotateLeft, stringResource(R.string.editor_rotate_left), tint = MaterialTheme.colorScheme.onBackground) }
+                IconButton({ vm.rotate(1) }, modifier = Modifier.testTag("editor-rotate-right")) { Icon(Icons.Outlined.RotateRight, stringResource(R.string.editor_rotate_right), tint = MaterialTheme.colorScheme.onBackground) }
+                IconButton(vm::flip, modifier = Modifier.testTag("editor-flip")) { Icon(Icons.Outlined.Flip, stringResource(R.string.editor_flip), tint = MaterialTheme.colorScheme.onBackground) }
             }
         }
     }

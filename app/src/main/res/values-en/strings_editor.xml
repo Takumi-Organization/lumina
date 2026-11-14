@@ -31,4 +31,10 @@
     <string name="editor_discard_title">Discard changes?</string>
     <string name="editor_discard_body">Unsaved edits will be lost. The original is never modified.</string>
     <string name="editor_discard">Discard</string>
+    <string name="look_original">Original</string>
+    <string name="look_vivid">Vivid</string>
+    <string name="look_warm">Warm</string>
+    <string name="look_mono">Mono</string>
+    <string name="look_cine">Cine</string>
+    <string name="look_fade">Matte</string>
 </resources>

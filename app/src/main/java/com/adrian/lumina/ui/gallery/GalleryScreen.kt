@@ -64,6 +64,7 @@ import androidx.compose.ui.text.withStyle
 import com.adrian.lumina.R
 import com.adrian.lumina.domain.model.TimelineEntry
 import com.adrian.lumina.ui.components.EmptyState
+import com.adrian.lumina.domain.usecase.overview
 import com.adrian.lumina.ui.components.Hairline
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -83,6 +84,8 @@ class GalleryActions(
     val onAddToAlbum: () -> Unit = {},
     val onRetry: () -> Unit = {},
     val onOpenPermissions: () -> Unit = {},
+    val onPickMonth: (com.adrian.lumina.domain.usecase.MonthOverview) -> Unit = {},
+    val onPickYear: (com.adrian.lumina.domain.usecase.YearOverview) -> Unit = {},
 )
 
 private val TitleBarHeight = 64.dp
@@ -98,6 +101,7 @@ fun GalleryScreen(
     actions: GalleryActions,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
+    level: com.adrian.lumina.domain.usecase.ZoomLevel = com.adrian.lumina.domain.usecase.ZoomLevel.DAYS,
 ) {
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + TitleBarHeight
     val pad = PaddingValues(top = top, bottom = 24.dp)
@@ -126,11 +130,37 @@ fun GalleryScreen(
             )
             is GalleryUiState.Content -> {
                 androidx.compose.runtime.LaunchedEffect(Unit) { com.adrian.lumina.app.PerfLog.mark("lista compuesta") }
-                Mosaic(state, selection, columns, actions, listState, pad)
-                TimeScrubber(
-                    state.timeline, listState,
-                    Modifier.align(Alignment.CenterEnd).statusBarsPadding().padding(top = TitleBarHeight).navigationBarsPadding(),
-                )
+                val currentColumns by rememberUpdatedState(columns)
+                val onColumns by rememberUpdatedState(actions.onColumns)
+                val overview = androidx.compose.runtime.remember(state.timeline) { state.timeline.overview() }
+                val sidePad = PaddingValues(top = pad.calculateTopPadding(), bottom = pad.calculateBottomPadding(), start = 14.dp, end = 14.dp)
+                androidx.compose.animation.AnimatedContent(
+                    targetState = level,
+                    modifier = Modifier.fillMaxSize().pinchToChangeColumns(columns = { currentColumns }, onColumns = { onColumns(it) }),
+                    transitionSpec = {
+                        if (targetState.ordinal < initialState.ordinal) {
+                            // Hacia años: la vista actual se aleja y la nueva llega desde dentro.
+                            (fadeIn(Springs.smooth()) + androidx.compose.animation.scaleIn(Springs.smooth(), initialScale = 1.18f)) togetherWith
+                                (fadeOut(Springs.smooth()) + androidx.compose.animation.scaleOut(Springs.smooth(), targetScale = 0.86f))
+                        } else {
+                            (fadeIn(Springs.smooth()) + androidx.compose.animation.scaleIn(Springs.smooth(), initialScale = 0.86f)) togetherWith
+                                (fadeOut(Springs.smooth()) + androidx.compose.animation.scaleOut(Springs.smooth(), targetScale = 1.18f))
+                        }
+                    },
+                    label = "zoomLevel",
+                ) { lv ->
+                    when (lv) {
+                        com.adrian.lumina.domain.usecase.ZoomLevel.DAYS -> Box(Modifier.fillMaxSize()) {
+                            Mosaic(state, selection, columns, actions, listState, pad)
+                            TimeScrubber(
+                                state.timeline, listState,
+                                Modifier.align(Alignment.CenterEnd).statusBarsPadding().padding(top = TitleBarHeight).navigationBarsPadding(),
+                            )
+                        }
+                        com.adrian.lumina.domain.usecase.ZoomLevel.MONTHS -> MonthsView(overview, sidePad, actions.onPickMonth)
+                        com.adrian.lumina.domain.usecase.ZoomLevel.YEARS -> YearsView(overview, pad, actions.onPickYear)
+                    }
+                }
             }
         }
         AnimatedContent(
@@ -245,14 +275,12 @@ private fun Mosaic(
     pad: PaddingValues,
 ) {
     val selecting = selection.isNotEmpty()
-    val currentColumns by rememberUpdatedState(columns)
-    val onColumns by rememberUpdatedState(actions.onColumns)
     val today = androidx.compose.runtime.remember { LocalDate.now() }
     val todayLabel = stringResource(R.string.today)
     val yesterdayLabel = stringResource(R.string.yesterday)
     LazyColumn(
         state = listState,
-        modifier = Modifier.fillMaxSize().navigationBarsPadding().pinchToChangeColumns(columns = { currentColumns }, onColumns = { onColumns(it) }),
+        modifier = Modifier.fillMaxSize().navigationBarsPadding(),
         contentPadding = pad,
         verticalArrangement = Arrangement.spacedBy(GAP.dp),
     ) {

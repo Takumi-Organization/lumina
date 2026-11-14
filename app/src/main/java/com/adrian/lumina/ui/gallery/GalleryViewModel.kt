@@ -37,6 +37,8 @@ class GalleryViewModel(
 
     val favoritesOnly = MutableStateFlow(false)
     val columns = MutableStateFlow(DEFAULT_COLUMNS)
+    /** Nivel de zoom: años ⇢ meses ⇢ días (pellizco más allá de la densidad máxima/mínima). */
+    val level = MutableStateFlow(com.adrian.lumina.domain.usecase.ZoomLevel.DAYS)
     val selection = MutableStateFlow<Set<Long>>(emptySet())
 
     /** Id del elemento abierto en el visor (null = cuadrícula). Se actualiza al cambiar de página. */
@@ -84,7 +86,21 @@ class GalleryViewModel(
     fun toggleGroup(ids: Collection<Long>) = selection.update { it.toggleGroup(ids) }
     fun clearSelection() { selection.value = emptySet() }
     fun setFavoritesOnly(value: Boolean) { favoritesOnly.value = value; clearSelection() }
-    fun setColumns(value: Int) { columns.value = value.coerceIn(MIN_COLUMNS, MAX_COLUMNS) }
+    /**
+     * Pellizco: en días cambia la densidad y, al pasar del límite, sube de nivel (meses → años). En meses y años el
+     * pellizco solo cambia de nivel (juntar dedos = más grueso, separar = más fino).
+     */
+    fun setColumns(value: Int) {
+        val z = com.adrian.lumina.domain.usecase.ZoomLevel.entries
+        val cur = level.value
+        if (cur != com.adrian.lumina.domain.usecase.ZoomLevel.DAYS) {
+            level.value = if (value > columns.value) z.getOrElse(cur.ordinal - 1) { cur } else z.getOrElse(cur.ordinal + 1) { cur }
+            return
+        }
+        if (value > MAX_COLUMNS) { level.value = com.adrian.lumina.domain.usecase.ZoomLevel.MONTHS; clearSelection(); return }
+        columns.value = value.coerceIn(MIN_COLUMNS, MAX_COLUMNS)
+    }
+    fun setLevel(l: com.adrian.lumina.domain.usecase.ZoomLevel) { level.value = l }
 
     /** Si todo lo seleccionado ya es favorito, lo quita; si no, lo marca entero. */
     fun toggleFavoriteOfSelection() {

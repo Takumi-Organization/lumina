@@ -18,12 +18,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Replay
-import androidx.compose.material.icons.rounded.ScreenRotation
-import androidx.compose.material.icons.rounded.VolumeOff
-import androidx.compose.material.icons.rounded.VolumeUp
+import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Replay
+import androidx.compose.material.icons.outlined.ScreenRotation
+import androidx.compose.material.icons.outlined.VolumeOff
+import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -168,7 +168,7 @@ fun VideoPage(
                         .clickable { started = true }.testTag("video-start"),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Rounded.PlayArrow, stringResource(R.string.play_video), tint = Color.White, modifier = Modifier.size(44.dp))
+                    Icon(Icons.Outlined.PlayArrow, stringResource(R.string.play_video), tint = Color.White, modifier = Modifier.size(44.dp))
                 }
             }
         } else {
@@ -219,7 +219,7 @@ private fun ActiveVideo(player: ExoPlayer, onTap: () -> Unit) {
                 Modifier.size(72.dp).clip(CircleShape).background(Color(0x99000000))
                     .clickable { player.seekTo(0); player.play() }.testTag("video-replay"),
                 contentAlignment = Alignment.Center,
-            ) { Icon(Icons.Rounded.Replay, stringResource(R.string.video_replay), tint = Color.White, modifier = Modifier.size(44.dp)) }
+            ) { Icon(Icons.Outlined.Replay, stringResource(R.string.video_replay), tint = Color.White, modifier = Modifier.size(44.dp)) }
         }
     }
 }
@@ -263,7 +263,7 @@ fun VideoControls(player: Player, modifier: Modifier = Modifier) {
                 modifier = Modifier.testTag("video-play-pause").semantics { stateDescription = if (snap.isPlaying) "playing" else "paused" },
             ) {
                 Icon(
-                    if (snap.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                    if (snap.isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
                     stringResource(if (snap.isPlaying) R.string.video_pause else R.string.video_play), tint = Color.White,
                 )
             }
@@ -272,7 +272,7 @@ fun VideoControls(player: Player, modifier: Modifier = Modifier) {
                 modifier = Modifier.testTag("video-mute"),
             ) {
                 Icon(
-                    if (snap.volume > 0f) Icons.Rounded.VolumeUp else Icons.Rounded.VolumeOff,
+                    if (snap.volume > 0f) Icons.Outlined.VolumeUp else Icons.Outlined.VolumeOff,
                     stringResource(if (snap.volume > 0f) R.string.video_mute else R.string.video_unmute), tint = Color.White,
                 )
             }
@@ -291,7 +291,7 @@ fun VideoControls(player: Player, modifier: Modifier = Modifier) {
                         if (landscape) ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED else ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
                 },
                 modifier = Modifier.testTag("video-rotate"),
-            ) { Icon(Icons.Rounded.ScreenRotation, stringResource(R.string.video_rotate), tint = Color.White) }
+            ) { Icon(Icons.Outlined.ScreenRotation, stringResource(R.string.video_rotate), tint = Color.White) }
         }
     }
 }

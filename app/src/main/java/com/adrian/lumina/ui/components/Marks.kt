@@ -129,3 +129,14 @@ fun LuminaButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
 }
 
 
+
+/** Píldora de selección (filtros, pestañas del editor): se rellena de acento con un muelle al elegirla. */
+@Composable
+fun LuminaPill(text: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val c = MaterialTheme.colorScheme
+    val bg by animateColorAsState(if (selected) c.primary else c.surfaceVariant, Springs.snappy(), label = "pill")
+    Box(
+        modifier.clip(androidx.compose.foundation.shape.CircleShape).background(bg)
+            .selectable(selected, role = Role.RadioButton, onClick = onClick).padding(horizontal = 16.dp, vertical = 9.dp),
+    ) { Text(text, style = MaterialTheme.typography.labelLarge, color = if (selected) c.onPrimary else c.onBackground) }
+}

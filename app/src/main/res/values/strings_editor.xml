@@ -31,4 +31,10 @@
     <string name="editor_discard_title">¿Descartar los cambios?</string>
     <string name="editor_discard_body">Las ediciones no guardadas se perderán. El original no se modifica.</string>
     <string name="editor_discard">Descartar</string>
+    <string name="look_original">Original</string>
+    <string name="look_vivid">Vívido</string>
+    <string name="look_warm">Cálido</string>
+    <string name="look_mono">Mono</string>
+    <string name="look_cine">Cine</string>
+    <string name="look_fade">Mate</string>
 </resources>

@@ -58,6 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.adrian.lumina.R
+import kotlinx.coroutines.launch
 import com.adrian.lumina.ui.albums.AlbumDetailActions
 import com.adrian.lumina.ui.albums.AlbumDetailScreen
 import com.adrian.lumina.ui.albums.AlbumFormDialog
@@ -107,6 +108,8 @@ fun LuminaHost(
     val state by vm.state.collectAsStateWithLifecycle()
     val selection by vm.selection.collectAsStateWithLifecycle()
     val columns by vm.columns.collectAsStateWithLifecycle()
+    val level by vm.level.collectAsStateWithLifecycle()
+    val hostScope = androidx.compose.runtime.rememberCoroutineScope()
     val favoritesOnly by vm.favoritesOnly.collectAsStateWithLifecycle()
     val viewerId by vm.viewerId.collectAsStateWithLifecycle()
     val gridState = androidx.compose.foundation.lazy.rememberLazyListState()
@@ -172,6 +175,8 @@ fun LuminaHost(
         onDeleteSelected = { trash(items.filter { it.id in selection }) },
         onAddToAlbum = { dialog = AlbumDialog.Pick(selection) },
         onRetry = vm::retry,
+        onPickMonth = { m -> vm.setLevel(com.adrian.lumina.domain.usecase.ZoomLevel.DAYS); hostScope.launch { gridState.scrollToItem(m.entryIndex) } },
+        onPickYear = { y -> vm.setLevel(com.adrian.lumina.domain.usecase.ZoomLevel.MONTHS) },
         onOpenPermissions = { com.adrian.lumina.app.openAppSettings(context) },
     )
 
@@ -206,7 +211,7 @@ fun LuminaHost(
                                 section == Section.LIBRARY -> GalleryScreen(
                                     state = state, selection = selection, columns = columns, favoritesOnly = favoritesOnly,
                                     allSelectedFavorite = selection.isNotEmpty() && vm.allSelectedAreFavorite(),
-                                    actions = actions, listState = gridState,
+                                    actions = actions, listState = gridState, level = level,
                                 )
                                 section == Section.SETTINGS -> SettingsScreen(
                                     settings, storage, BuildConfigVersion, settingsVm::update,

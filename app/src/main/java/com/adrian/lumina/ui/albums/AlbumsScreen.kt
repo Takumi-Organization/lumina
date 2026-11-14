@@ -26,10 +26,10 @@ import com.adrian.lumina.ui.components.Hairline
 import com.adrian.lumina.ui.components.ScreenTitle
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.Visibility
-import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -90,13 +90,13 @@ fun AlbumsScreen(
         ScreenTitle(stringResource(R.string.tab_albums)) {
             IconButton(onClick = { onShowHidden(!showHidden) }, modifier = Modifier.testTag("albums-show-hidden")) {
                 Icon(
-                    if (showHidden) Icons.Rounded.Visibility else Icons.Rounded.VisibilityOff,
+                    if (showHidden) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
                     stringResource(if (showHidden) R.string.albums_hide_hidden else R.string.albums_show_hidden),
                     tint = if (showHidden) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             IconButton(onClick = onCreate, modifier = Modifier.testTag("albums-create")) {
-                Icon(Icons.Rounded.Add, stringResource(R.string.album_new), tint = MaterialTheme.colorScheme.primary)
+                Icon(Icons.Outlined.Add, stringResource(R.string.album_new), tint = MaterialTheme.colorScheme.primary)
             }
         }
     }

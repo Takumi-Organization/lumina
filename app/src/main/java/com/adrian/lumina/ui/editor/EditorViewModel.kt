@@ -12,6 +12,8 @@ import com.adrian.lumina.editor.EditState
 import com.adrian.lumina.editor.PixelImage
 import com.adrian.lumina.editor.UndoStack
 import com.adrian.lumina.editor.centeredCrop
+import com.adrian.lumina.editor.applyTo
+import com.adrian.lumina.editor.downscale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -47,6 +49,8 @@ class EditorViewModel(private val item: MediaItem, private val codec: ImageCodec
     val preview = MutableStateFlow<Bitmap?>(null)
     val failedToLoad = MutableStateFlow(false)
     val saveState = MutableStateFlow<SaveState>(SaveState.Idle)
+    /** Miniaturas de cada look sobre la foto abierta (vista previa en vivo de los filtros). */
+    val looks = MutableStateFlow<List<Pair<com.adrian.lumina.editor.Look, Bitmap>>>(emptyList())
 
     private var source: PixelImage? = null
 
@@ -56,6 +60,10 @@ class EditorViewModel(private val item: MediaItem, private val codec: ImageCodec
             if (src == null) { failedToLoad.value = true; return@launch }
             source = src
             original.value = ImageCodec.toBitmap(src)
+            launch(Dispatchers.Default) {
+                val small = src.downscale(132)
+                looks.value = com.adrian.lumina.editor.Look.entries.map { it to ImageCodec.toBitmap(EditPipeline.apply(small, it.applyTo(EditState()))) }
+            }
             combine(live, cropMode) { st, cm -> if (cm) st.copy(crop = CropRect()) else st }.collectLatest { st ->
                 preview.value = withContext(Dispatchers.Default) { ImageCodec.toBitmap(EditPipeline.apply(src, st)) }
             }
@@ -82,6 +90,7 @@ class EditorViewModel(private val item: MediaItem, private val codec: ImageCodec
     /** Recorte libre: se actualiza en vivo al arrastrar y se confirma con [commitDraft]. */
     fun cropDraft(rect: CropRect) { draft.value = (draft.value ?: history.value.current).copy(crop = rect) }
     fun reset() = apply { EditState() }
+    fun applyLook(look: com.adrian.lumina.editor.Look) = apply { look.applyTo(it) }
     fun undo() { draft.value = null; history.value = history.value.undo() }
     fun redo() { draft.value = null; history.value = history.value.redo() }
 
