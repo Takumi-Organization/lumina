@@ -109,8 +109,8 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.section(
     item(span = { GridItemSpan(maxLineSpan) }, key = "h-$title") {
         Column(Modifier.padding(top = 18.dp)) {
             Row(verticalAlignment = Alignment.Bottom) {
-                Box(Modifier.size(10.dp, 28.dp).background(MaterialTheme.colorScheme.primary))
-                Text(stringResource(title).uppercase(), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(start = 10.dp).weight(1f))
+                Box(Modifier.size(5.dp, 24.dp).clip(androidx.compose.foundation.shape.CircleShape).background(MaterialTheme.colorScheme.primary))
+                Text(stringResource(title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(start = 10.dp).weight(1f))
                 Text("%02d".format(cards.size), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Hairline(Modifier.padding(top = 6.dp))
@@ -147,7 +147,7 @@ private fun AlbumTile(card: AlbumCard, index: Int, hero: Boolean, onClick: () ->
             )
         }
         Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.Bottom) {
-            Text(cardTitle(card).uppercase(), style = if (hero) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+            Text(cardTitle(card), style = if (hero) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
             Text("${card.count}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 8.dp, bottom = 3.dp))
         }
     }

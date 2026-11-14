@@ -128,6 +128,11 @@ object Springs {
     fun <T> gentle() = spring<T>(dampingRatio = 1f, stiffness = 120f)
 }
 
+/** Respeta «reducir animaciones»: con el ajuste (o la escala del sistema) apagado, cualquier muelle pasa a ser instantáneo. */
+@Composable
+fun <T> motion(spec: androidx.compose.animation.core.AnimationSpec<T>): androidx.compose.animation.core.AnimationSpec<T> =
+    if (LocalAnimationsEnabled.current) spec else androidx.compose.animation.core.snap()
+
 /** Si es false, las animaciones propias se desactivan (ajuste de usuario o escala de animación del sistema). */
 val LocalAnimationsEnabled = staticCompositionLocalOf { true }
 val LocalHapticsEnabled = staticCompositionLocalOf { true }

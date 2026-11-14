@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Icon
 import com.adrian.lumina.ui.theme.LocalDark
 import com.adrian.lumina.ui.theme.Springs
+import com.adrian.lumina.ui.theme.motion
 import com.adrian.lumina.ui.theme.SquircleShape
 
 /** Línea fina de 0,5-1 dp (separador de listas, estilo iOS). */
@@ -68,13 +69,13 @@ fun LuminaTabs(
                 .clip(SquircleShape(26.dp)).background(glass()).padding(6.dp),
         ) {
             val slot = maxWidth / labels.size
-            val x by animateDpAsState(slot * selected, Springs.snappy(), label = "tabX")
+            val x by animateDpAsState(slot * selected, motion(Springs.snappy()), label = "tabX")
             Box(Modifier.offset(x = x).width(slot).height(54.dp).clip(SquircleShape(20.dp)).background(c.primary.copy(alpha = 0.16f)))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 labels.forEachIndexed { i, label ->
                     val on = i == selected
-                    val tint by animateColorAsState(if (on) c.primary else c.onSurfaceVariant, Springs.snappy(), label = "tabTint")
-                    val scale by animateFloatAsState(if (on) 1f else 0.94f, Springs.bouncy(), label = "tabScale")
+                    val tint by animateColorAsState(if (on) c.primary else c.onSurfaceVariant, motion(Springs.snappy()), label = "tabTint")
+                    val scale by animateFloatAsState(if (on) 1f else 0.94f, motion(Springs.bouncy()), label = "tabScale")
                     Column(
                         Modifier.weight(1f).height(54.dp)
                             .let { if (tags.isNotEmpty()) it.testTag(tags[i]) else it }
@@ -116,7 +117,7 @@ fun LuminaButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
     val c = MaterialTheme.colorScheme
     val source = androidx.compose.runtime.remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (pressed) 0.96f else 1f, Springs.bouncy(), label = "btn")
+    val scale by animateFloatAsState(if (pressed) 0.96f else 1f, motion(Springs.bouncy()), label = "btn")
     Box(
         modifier.scale2(scale).clip(SquircleShape(16.dp))
             .background(if (filled) c.primary else c.primary.copy(alpha = 0.14f))
@@ -134,7 +135,7 @@ fun LuminaButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
 @Composable
 fun LuminaPill(text: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val c = MaterialTheme.colorScheme
-    val bg by animateColorAsState(if (selected) c.primary else c.surfaceVariant, Springs.snappy(), label = "pill")
+    val bg by animateColorAsState(if (selected) c.primary else c.surfaceVariant, motion(Springs.snappy()), label = "pill")
     Box(
         modifier.clip(androidx.compose.foundation.shape.CircleShape).background(bg)
             .selectable(selected, role = Role.RadioButton, onClick = onClick).padding(horizontal = 16.dp, vertical = 9.dp),

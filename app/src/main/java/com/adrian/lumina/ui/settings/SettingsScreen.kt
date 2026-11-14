@@ -52,10 +52,12 @@ import com.adrian.lumina.ui.components.LuminaButton
 import com.adrian.lumina.ui.components.ScreenTitle
 import com.adrian.lumina.ui.theme.LocalDark
 import com.adrian.lumina.ui.theme.Springs
+import com.adrian.lumina.ui.theme.motion
 import com.adrian.lumina.ui.theme.SquircleShape
 import com.adrian.lumina.ui.theme.color
 
 /** Ajustes con listas agrupadas de esquinas continuas, interruptores con muelle y acento elegible. */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     settings: AppSettings,
@@ -88,6 +90,7 @@ fun SettingsScreen(
                                 thumbColor = Color.White, activeTrackColor = MaterialTheme.colorScheme.primary,
                                 inactiveTrackColor = MaterialTheme.colorScheme.outline, activeTickColor = Color.Transparent, inactiveTickColor = Color.Transparent,
                             ),
+                            thumb = { Box(Modifier.size(28.dp).shadow(4.dp, CircleShape).clip(CircleShape).background(Color.White)) },
                         )
                     }
                 }
@@ -155,8 +158,8 @@ private fun Row2(last: Boolean = false, content: @Composable () -> Unit) {
 @Composable
 private fun Toggle(label: Int, value: Boolean, tag: String, onChange: (Boolean) -> Unit) {
     val c = MaterialTheme.colorScheme
-    val track by animateColorAsState(if (value) c.primary else c.outline, Springs.snappy(), label = "track")
-    val knob by animateDpAsState(if (value) 22.dp else 0.dp, Springs.bouncy(), label = "knob")
+    val track by animateColorAsState(if (value) c.primary else c.outline, motion(Springs.snappy()), label = "track")
+    val knob by animateDpAsState(if (value) 22.dp else 0.dp, motion(Springs.bouncy()), label = "knob")
     Row(
         Modifier.fillMaxWidth().toggleable(value, role = Role.Switch, onValueChange = onChange).testTag("set-$tag"),
         verticalAlignment = Alignment.CenterVertically,
@@ -181,7 +184,7 @@ private fun <T> Choice(label: Int, options: List<T>, selected: T, text: @Composa
 @Composable
 private fun Pill(text: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val c = MaterialTheme.colorScheme
-    val bg by animateColorAsState(if (selected) c.primary else c.surfaceVariant, Springs.snappy(), label = "pill")
+    val bg by animateColorAsState(if (selected) c.primary else c.surfaceVariant, motion(Springs.snappy()), label = "pill")
     Box(
         modifier.clip(CircleShape).background(bg).selectable(selected, role = Role.RadioButton, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 9.dp),
@@ -197,7 +200,7 @@ private fun AccentPicker(current: AccentChoice, onPick: (AccentChoice) -> Unit) 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             AccentChoice.entries.forEach { a ->
                 val on = a == current
-                val ring by animateDpAsState(if (on) 3.dp else 0.dp, Springs.bouncy(), label = "ring")
+                val ring by animateDpAsState(if (on) 3.dp else 0.dp, motion(Springs.bouncy()), label = "ring")
                 Column(
                     Modifier.selectable(on, role = Role.RadioButton, onClick = { onPick(a) }).testTag("set-accent-$a"),
                     horizontalAlignment = Alignment.CenterHorizontally,

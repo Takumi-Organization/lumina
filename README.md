@@ -13,6 +13,7 @@ Galería multimedia para Android (Kotlin, Compose, MVVM). Diseño y fases: [docs
 - Fase 8: ajustes (DataStore): tema, animaciones (y escala de animación del sistema), vibración háptica, columnas por defecto, calidad de miniaturas, orden por defecto de álbumes, autoplay de vídeo, proteger pantalla (FLAG_SECURE), resumen de almacenamiento y vaciar caché de miniaturas.
 
 - Fase 9: APK release (R8 + recursos reducidos) firmado con la clave de depuración, mediciones de dominio y de lista grande, corrección de errores de lint (opt-in de Media3, configuración en composables).
+- Fase 10: dirección visual Obsidiana/Marfil (Inter, esquinas continuas, barra flotante, mosaico editorial con meses gigantes), respeto a «reducir animaciones» y verificación en móvil físico.
 
 Pruebas: `./gradlew :app:testDebugUnitTest` y, con emulador, `ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest` (fijar el serial: si hay un móvil conectado, Gradle intenta instalar también ahí).
 
@@ -37,7 +38,7 @@ Verificación de este cambio: tests JVM de `mediaAccess()` y clasificación por 
 
 ## Verificación (2026-11-14)
 
-Todo lo siguiente se ejecutó en el emulador compartido `emulator-5554` (Pixel_API36, Android 16) o en JVM; no hay prueba en móvil físico.
+Todo lo siguiente se ejecutó en el emulador compartido `emulator-5554` (Pixel_API36, Android 16), en JVM y, para cerrar esta fase, en el móvil físico de Adrián (`78af40b4`, 1280×2772) con el APK release instalado con `install -r` (los datos se conservan).
 
 Tests automáticos
 - `testDebugUnitTest`: 89 tests JVM (dominio, líneas de tiempo, álbumes y `AlbumsViewModel` con repositorios falsos —crear, añadir, reordenar, portada, quitar, ocultar, eliminar—, búsqueda, píxeles del editor, geometría del recorte libre, deshacer/rehacer, DataStore sobre archivo real, almacenamiento, rendimiento de dominio).
@@ -51,12 +52,20 @@ Recorrido real en pantalla (capturas con `screencap`, interacción con `input`)
 - **APK release (R8) ejecutado**: arranca, lista 10 128 elementos reales con miniaturas; Room, DataStore, búsqueda, ajustes y reproducción de vídeo funcionan sin excepciones ni reglas de keep adicionales.
 - «Proteger pantalla»: con el ajuste activo `screencap` devuelve negro (FLAG_SECURE efectivo); desactivado, normal.
 
+Móvil físico (Xiaomi `78af40b4`, APK release, 7 382 elementos reales)
+- Biblioteca real: 7 382 elementos (6 599 imágenes + 783 vídeos, 89,8 GB) leídos de MediaStore ~350 ms después del primer frame; cuadrícula, meses/años, álbumes, búsqueda y ajustes responden con miniaturas reales.
+- Arranque en frío con `am start -W` (3 medidas): 199/208/231 ms, por debajo del objetivo de 500 ms. El APK debug tarda ~700 ms, así que las cifras de rendimiento se toman siempre en release.
+- Desplazamiento: 10 deslizamientos rápidos de punta a punta, `dumpsys gfxinfo`: 794 frames, 1 lento (0,13 %), percentiles 50/90/95/99 = 10/11/12/20 ms, 0 vsync perdidos.
+- Capturas reales en `docs/capturas/phone-*.png` (claro y oscuro: biblioteca, álbumes, búsqueda, apariencia, ajustes y visor).
+- «Proteger pantalla» comprobado en el móvil: activo, `screencap` devuelve negro (FLAG_SECURE); desactivado, captura normal. Se dejó activado, como estaba.
+
 Defectos encontrados y corregidos al verlo en pantalla
 - Texto negro sobre fondo oscuro (faltaba `Surface` en el tema) y esquema de color M3 incompleto (barra de navegación y chips lavanda).
 - La cabecera de «Mis álbumes» quedaba bajo la barra de título (no contaba el inset de estado).
 - El arrastre del recorte aplicaba solo el último delta (estado obsoleto entre eventos): ahora acumula.
 - Salir del visor tras «girar» un vídeo dejaba toda la app en horizontal: se restablece la orientación al cerrar.
 - Los interruptores de ajustes solo respondían al pulsar el propio interruptor (ahora toda la fila) y apagados no se veían.
+- «Reducir animaciones» no llegaba a todos los muelles: ahora `motion()` los convierte en `snap` (pestañas, botones, cambios de nivel, interruptores y selector de acento) cuando el ajuste está apagado o la escala del sistema es 0.
 
 Rendimiento (emulador, APK release, **10 128 imágenes reales** de 480×360 sembradas con `tools/seed-perf.py`, miniaturas incluidas)
 - 25 deslizamientos rápidos de punta a punta en la biblioteca, `dumpsys gfxinfo`: 1,71 % de frames lentos (15 de ≈ 880); percentiles de frame 50/90/95/99 = 8/16/16/18 ms (límite de 16,6 ms a 60 Hz); GPU 7/15/16/16 ms; 0 vsync perdidos. Memoria: Java heap ≈ 20 MB, Native ≈ 160 MB.
@@ -64,7 +73,7 @@ Rendimiento (emulador, APK release, **10 128 imágenes reales** de 480×360 semb
 - Son cifras del emulador (GPU/CPU emuladas): sirven para comparar versiones, no para prometer fluidez en un móvil concreto.
 
 Limitaciones que siguen abiertas (lo único)
-- **Móvil físico**: no probado (ni rendimiento, ni cámara real, ni sincronización con otras apps). Es la única verificación pendiente de Adrián.
+- **Móvil físico**: verificado en el Xiaomi de Adrián (arranque, biblioteca real, capturas y FLAG_SECURE). Quedan sin probar otros fabricantes y la sincronización con otras apps; el desplazamiento se midió con `gfxinfo`, no con un perfil de Android Studio.
 - Ajustes: la escala de animación del sistema y la «calidad» de miniaturas solo están comprobadas hasta el punto de que el tema las expone a la UI (test instrumentado); no se observó el efecto a ojo.
 - Editor: vista previa en CPU a 1280 px; exportación hasta 4096 px de lado mayor (`largeHeap`); no se conserva EXIF en copias PNG.
 - Álbumes ocultos: solo se ocultan de la lista (las fotos siguen en la biblioteca); favoritos y álbumes son locales a Lumina (Room) y no se sincronizan con otras apps.

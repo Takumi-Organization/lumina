@@ -135,11 +135,13 @@ fun GalleryScreen(
                 val onColumns by rememberUpdatedState(actions.onColumns)
                 val overview = androidx.compose.runtime.remember(state.timeline) { state.timeline.overview() }
                 val sidePad = PaddingValues(top = pad.calculateTopPadding(), bottom = pad.calculateBottomPadding(), start = 14.dp, end = 14.dp)
+                val animateLevels = com.adrian.lumina.ui.theme.LocalAnimationsEnabled.current
                 androidx.compose.animation.AnimatedContent(
                     targetState = level,
                     modifier = Modifier.fillMaxSize().pinchToChangeColumns(columns = { currentColumns }, onColumns = { onColumns(it) }),
                     transitionSpec = {
-                        if (targetState.ordinal < initialState.ordinal) {
+                        if (!animateLevels) androidx.compose.animation.EnterTransition.None togetherWith androidx.compose.animation.ExitTransition.None
+                        else if (targetState.ordinal < initialState.ordinal) {
                             // Hacia años: la vista actual se aleja y la nueva llega desde dentro.
                             (fadeIn(Springs.smooth()) + androidx.compose.animation.scaleIn(Springs.smooth(), initialScale = 1.18f)) togetherWith
                                 (fadeOut(Springs.smooth()) + androidx.compose.animation.scaleOut(Springs.smooth(), targetScale = 0.86f))
@@ -182,7 +184,7 @@ private fun TitleBar(state: GalleryUiState, favoritesOnly: Boolean, listState: L
     val atTop by androidx.compose.runtime.remember { androidx.compose.runtime.derivedStateOf { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset < 40 } }
     val mark = timeline?.let { t -> androidx.compose.runtime.remember(t, listState.firstVisibleItemIndex) { t.monthAtEntry(listState.firstVisibleItemIndex) } }
     val bg by androidx.compose.animation.animateColorAsState(
-        if (atTop) Color.Transparent else glass(), Springs.smooth(), label = "barBg",
+        if (atTop) Color.Transparent else glass(), com.adrian.lumina.ui.theme.motion(Springs.smooth()), label = "barBg",
     )
     Row(
         Modifier.fillMaxWidth().background(bg).statusBarsPadding().padding(start = 20.dp, end = 6.dp, top = 8.dp, bottom = 6.dp),
