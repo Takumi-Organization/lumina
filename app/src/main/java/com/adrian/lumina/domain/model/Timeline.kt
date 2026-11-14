@@ -3,6 +3,9 @@ package com.adrian.lumina.domain.model
 import java.time.LocalDate
 import java.time.YearMonth
 
+/** Fecha de relleno (1970-01-01) para filas sin día asociado; `LocalDate.EPOCH` exige API 34. */
+val EPOCH_DAY: LocalDate = LocalDate.of(1970, 1, 1)
+
 /** Miniatura dentro de una fila del mosaico; [aspect] (ancho/alto, acotado) es también su peso horizontal en la fila. */
 data class MosaicCell(val item: MediaItem, val aspect: Float)
 
@@ -25,7 +28,7 @@ sealed interface TimelineEntry {
      * Fila del mosaico. Su alto es ancho/[aspect]; cada celda ocupa [MosaicCell.aspect] de ese ancho relativo y lo que
      * sobra ([aspect] menos la suma) se deja en blanco (última fila de un día). [hero]: primera foto del día, a todo ancho.
      */
-    data class Row(val cells: List<MosaicCell>, val aspect: Float, val hero: Boolean, val day: LocalDate = LocalDate.EPOCH) : TimelineEntry {
+    data class Row(val cells: List<MosaicCell>, val aspect: Float, val hero: Boolean, val day: LocalDate = EPOCH_DAY) : TimelineEntry {
         override val key get() = "r${cells.first().item.id}"
         val leftover get() = (aspect - cells.sumOf { it.aspect.toDouble() }.toFloat()).coerceAtLeast(0f)
     }

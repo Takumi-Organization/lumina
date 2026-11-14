@@ -14,7 +14,11 @@ import com.adrian.lumina.domain.model.MediaItem
 import com.adrian.lumina.domain.model.MediaKind
 import com.adrian.lumina.domain.model.kindFromMime
 import com.adrian.lumina.domain.repository.MediaRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -40,6 +44,7 @@ typealias Querier = (uri: Uri, projection: Array<String>, selection: String?, ar
  */
 class MediaStoreSource(
     private val resolver: ContentResolver,
+    private val warmer: ThumbnailWarmer? = null,
     private val querier: Querier = { uri, proj, sel, args -> resolver.query(uri, proj, sel, args, null) },
 ) : MediaRepository {
 
@@ -49,7 +54,13 @@ class MediaStoreSource(
     private val manualRefresh = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     override fun refresh() { manualRefresh.tryEmit(Unit) }
 
-    override fun observeAll(): Flow<List<MediaItem>> {
+    /** Una sola lectura compartida por todas las pantallas (antes cada ViewModel consultaba MediaStore por su cuenta). */
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val shared: Flow<List<MediaItem>> by lazy { buildFlow().shareIn(scope, SharingStarted.WhileSubscribed(5_000), replay = 1) }
+
+    override fun observeAll(): Flow<List<MediaItem>> = shared
+
+    private fun buildFlow(): Flow<List<MediaItem>> {
         val changes = callbackFlow {
             val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
                 override fun onChange(selfChange: Boolean) { trySend(Unit) }
@@ -86,6 +97,7 @@ class MediaStoreSource(
         val detail = notes.joinToString("; ")
         Log.i(TAG, "MediaStore: ${items.size} elementos ($detail)")
         _status.value = LibraryStatus(loaded = true, error = null, detail = detail)
+        warmer?.warm(items)
         return items
     }
 

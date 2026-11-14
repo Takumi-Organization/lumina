@@ -298,7 +298,7 @@ private fun ViewerPage(
 /** Barra superior flotante: botón de cierre en cápsula translúcida, fecha en el centro y contador. */
 @Composable
 private fun TopBar(item: MediaItem, index: Int, total: Int, onClose: () -> Unit) {
-    val l = Locale.getDefault()
+    val l = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
     val day = DateFormat.getDateInstance(DateFormat.LONG, l).format(Date(item.dateMillis))
     val time = DateFormat.getTimeInstance(DateFormat.SHORT, l).format(Date(item.dateMillis))
     Row(

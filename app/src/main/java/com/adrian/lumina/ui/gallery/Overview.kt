@@ -74,7 +74,7 @@ fun MonthsView(years: List<YearOverview>, pad: PaddingValues, onMonth: (MonthOve
                 Text("${y.year}", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(start = 16.dp, top = 14.dp))
             }
             items(y.months, key = { "m-${it.month}" }) { m ->
-                val locale = Locale.getDefault()
+                val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
                 Box(
                     Modifier.padding(horizontal = if (false) 0.dp else 0.dp).fillMaxWidth().aspectRatio(1f).clip(SquircleShape(20.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant).clickable { onMonth(m) }.testTag("month-${m.month}"),

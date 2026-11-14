@@ -132,7 +132,7 @@ fun TimeScrubber(timeline: Timeline, list: LazyListState, modifier: Modifier = M
 /** Cartel que sale al arrastrar: tarjeta de esquinas continuas con el mes y el año, pegada al carril. */
 @Composable
 private fun MonthPoster(month: YearMonth, modifier: Modifier) {
-    val locale = Locale.getDefault()
+    val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
     Column(
         modifier.wrapContentWidth(Alignment.End, unbounded = true).offset(x = (-28).dp)
             .shadow(20.dp, com.adrian.lumina.ui.theme.SquircleShape(18.dp))

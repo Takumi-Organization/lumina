@@ -3,6 +3,7 @@ package com.adrian.lumina.domain.usecase
 import com.adrian.lumina.domain.model.MediaItem
 import com.adrian.lumina.domain.model.MosaicCell
 import com.adrian.lumina.domain.model.TimelineEntry
+import com.adrian.lumina.domain.model.EPOCH_DAY
 import java.time.LocalDate
 
 private const val MIN_ASPECT = 0.62f
@@ -18,7 +19,7 @@ private fun aspectOf(i: MediaItem): Float =
  * [target] es la suma de proporciones por fila (≈ columnas · 0.75). Con densidad baja y ≥3 fotos, la primera del día va
  * sola a todo ancho (portada del día). Pura: mismo resultado para la misma entrada.
  */
-fun layoutMosaic(items: List<MediaItem>, target: Float, day: LocalDate = LocalDate.EPOCH): List<TimelineEntry.Row> {
+fun layoutMosaic(items: List<MediaItem>, target: Float, day: LocalDate = EPOCH_DAY): List<TimelineEntry.Row> {
     if (items.isEmpty()) return emptyList()
     val rows = ArrayList<TimelineEntry.Row>()
     var start = 0

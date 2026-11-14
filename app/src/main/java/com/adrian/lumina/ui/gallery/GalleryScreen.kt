@@ -90,6 +90,7 @@ class GalleryActions(
 
 private val TitleBarHeight = 64.dp
 private const val GAP = 3
+private const val PREFETCH_ROWS = 10
 
 @Composable
 fun GalleryScreen(
@@ -215,8 +216,9 @@ private fun TitleBar(state: GalleryUiState, favoritesOnly: Boolean, listState: L
     }
 }
 
+@Composable
 private fun monthTitle(m: java.time.YearMonth): String {
-    val l = Locale.getDefault()
+    val l = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
     return m.month.getDisplayName(TextStyle.FULL, l).replaceFirstChar { it.uppercase(l) } + " " + m.year
 }
 
@@ -275,6 +277,27 @@ private fun Mosaic(
     pad: PaddingValues,
 ) {
     val selecting = selection.isNotEmpty()
+    // Prefetch: mientras se desplaza se piden las miniaturas de las siguientes filas (en la dirección del movimiento).
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val thumbPx = com.adrian.lumina.ui.theme.LocalThumbSize.current
+    androidx.compose.runtime.LaunchedEffect(state.timeline, thumbPx) {
+        val loader = coil3.SingletonImageLoader.get(context)
+        val requested = HashSet<Long>()
+        var lastFirst = 0
+        androidx.compose.runtime.snapshotFlow { listState.firstVisibleItemIndex to (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) }
+            .collect { (first, last) ->
+                val forward = first >= lastFirst
+                lastFirst = first
+                val range = if (forward) (last + 1)..(last + PREFETCH_ROWS) else (first - PREFETCH_ROWS) until first
+                for (i in range) {
+                    val row = state.timeline.entries.getOrNull(i) as? TimelineEntry.Row ?: continue
+                    for (c in row.cells) if (requested.add(c.item.id)) {
+                        loader.enqueue(coil3.request.ImageRequest.Builder(context).data(com.adrian.lumina.data.media.Thumb(c.item.uri, thumbPx)).build())
+                    }
+                }
+                if (requested.size > 1500) requested.clear()
+            }
+    }
     val today = androidx.compose.runtime.remember { LocalDate.now() }
     val todayLabel = stringResource(R.string.today)
     val yesterdayLabel = stringResource(R.string.yesterday)
@@ -328,7 +351,7 @@ private fun MosaicRow(row: TimelineEntry.Row, selection: Set<Long>, selecting: B
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f), maxLines = 1, softWrap = false,
                     )
                     Text(
-                        row.day.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault()).replaceFirstChar { it.uppercase() },
+                        row.day.dayOfWeek.getDisplayName(TextStyle.FULL, androidx.compose.ui.platform.LocalConfiguration.current.locales[0]).replaceFirstChar { it.uppercase() },
                         style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, maxLines = 1,
                     )
                 }
@@ -340,7 +363,7 @@ private fun MosaicRow(row: TimelineEntry.Row, selection: Set<Long>, selecting: B
 /** Cabecera de mes: nombre en peso 800 a 40 sp y año en gris, como los titulares de Apple Fotos. Recuento a la derecha. */
 @Composable
 private fun MonthHeader(entry: TimelineEntry.Month) {
-    val locale = Locale.getDefault()
+    val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
     val name = entry.month.month.getDisplayName(TextStyle.FULL, locale).replaceFirstChar { it.uppercase(locale) }
     Row(Modifier.fillMaxWidth().padding(start = 18.dp, end = 18.dp, top = 30.dp, bottom = 4.dp), verticalAlignment = Alignment.Bottom) {
         Text(

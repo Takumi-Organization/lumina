@@ -23,7 +23,7 @@ import com.adrian.lumina.domain.usecase.MetadataSearchProvider
 /** Inyección manual: pocas dependencias, sin framework (ver docs/ARQUITECTURA.md). */
 class AppContainer(context: Context) {
     private val db = Room.databaseBuilder(context, LuminaDatabase::class.java, "lumina.db").addMigrations(MIGRATION_1_2).build()
-    val media: MediaRepository = MediaStoreSource(context.contentResolver)
+    val media: MediaRepository = MediaStoreSource(context.contentResolver, warmer = com.adrian.lumina.data.media.ThumbnailWarmer(context.contentResolver))
     val favorites: FavoritesRepository = RoomFavorites(db.favorites())
     val albums: AlbumRepository = RoomAlbums(db.albums())
     val actions = MediaActions(context)
