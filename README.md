@@ -34,7 +34,7 @@ Tests automáticos
 - `assembleDebug`, `assembleRelease` (R8) y `lintDebug` sin errores; `apksigner verify` OK.
 
 Recorrido real en pantalla (capturas con `screencap`, interacción con `input`)
-- Biblioteca, Álbumes, Búsqueda y Ajustes en tema claro y oscuro; permisos; crear un álbum, añadir fotos desde la selección, abrir su detalle y seleccionar.
+- Biblioteca, Álbumes, Búsqueda y Ajustes en tema claro y oscuro; permisos; crear un álbum, añadir fotos desde la selección, abrir su detalle, reordenar («mover después»), poner portada (la tarjeta cambia de miniatura), ocultar el álbum (desaparece de la lista) y mostrarlo con el ojo de «mostrar ocultos».
 - Editor: sliders (exposición, saturación, temperatura), pestaña de recorte, giro, espejo, deshacer, rehacer, mantener pulsado para comparar con el original y guardar copia (archivo creado en `Pictures/Lumina`).
 - Vídeo (fase 4): reproducción hasta «Repetir» y giro a horizontal con modo inmersivo; el vídeo ocupa la pantalla.
 - **APK release (R8) ejecutado**: arranca, lista 10 128 elementos reales con miniaturas; Room, DataStore, búsqueda, ajustes y reproducción de vídeo funcionan sin excepciones ni reglas de keep adicionales.
@@ -54,7 +54,7 @@ Rendimiento (emulador, APK release, **10 128 imágenes reales** de 480×360 semb
 
 Limitaciones que siguen abiertas (lo único)
 - **Móvil físico**: no probado (ni rendimiento, ni cámara real, ni sincronización con otras apps). Es la única verificación pendiente de Adrián.
-- No se recorrieron a mano en pantalla: portada, reordenar y ocultar álbum (verificados por `AlbumsViewModelTest` y los tests de Room/pantalla, no con el dedo); la escala de animación del sistema y la «calidad» de miniaturas (solo comprobado que el tema las expone a la UI).
+- Ajustes: la escala de animación del sistema y la «calidad» de miniaturas solo están comprobadas hasta el punto de que el tema las expone a la UI (test instrumentado); no se observó el efecto a ojo.
 - Editor: vista previa en CPU a 1280 px; exportación hasta 4096 px de lado mayor (`largeHeap`); no se conserva EXIF en copias PNG.
 - Álbumes ocultos: solo se ocultan de la lista (las fotos siguen en la biblioteca); favoritos y álbumes son locales a Lumina (Room) y no se sincronizan con otras apps.
 - APK release firmado con la clave de depuración: sirve para probar, no para publicar.
