@@ -37,7 +37,7 @@ class PerformanceTest {
 
     @Test fun timelineOf50kItems() {
         val t = timed("buildTimeline", 3_000) { buildTimeline(items, ZoneOffset.UTC) }
-        assertEquals(n, t.entries.count { it is com.adrian.lumina.domain.model.TimelineEntry.Cell })
+        assertEquals(n, t.items.size)
     }
 
     @Test fun overviewOf50kItems() {

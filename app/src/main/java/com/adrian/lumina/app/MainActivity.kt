@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
             }
             // Los ajustes del sistema también cuentan: sin animaciones si la escala del sistema es 0.
             val systemAnimations = remember { Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f }
-            LuminaTheme(dark, s.animations && systemAnimations, s.haptics, s.thumbQuality.px) {
+            LuminaTheme(dark, s.animations && systemAnimations, s.haptics, s.thumbQuality.px, s.accent) {
                 PermissionGate(onAccessChanged = { container.media.refresh() }) { access, requestFull ->
                     LuminaHost(container, s, access, requestFull)
                 }
@@ -115,12 +115,6 @@ private fun PermissionGate(onAccessChanged: () -> Unit, content: @Composable (Me
         if (before == access && access != MediaAccess.FULL) openAppSettings(context)
     }
     androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { recheck() }
-    if (access != MediaAccess.NONE) content(access) { launcher.launch(mediaPermissions()) } else EmptyState(
-        title = stringResource(R.string.permission_title),
-        body = stringResource(R.string.permission_body),
-        actionLabel = stringResource(R.string.permission_action),
-        onAction = { launcher.launch(mediaPermissions()) },
-        secondaryLabel = stringResource(R.string.library_permissions),
-        onSecondary = { openAppSettings(context) },
-    )
+    if (access != MediaAccess.NONE) content(access) { launcher.launch(mediaPermissions()) }
+    else com.adrian.lumina.ui.onboarding.Onboarding({ launcher.launch(mediaPermissions()) }, { openAppSettings(context) })
 }

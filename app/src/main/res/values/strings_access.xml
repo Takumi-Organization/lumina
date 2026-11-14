@@ -7,4 +7,17 @@
     <string name="access_partial_title">Solo ves una parte de tu biblioteca</string>
     <string name="access_partial_body">Diste acceso a fotos seleccionadas o solo a un tipo de archivo. Concede el acceso completo para ver todo.</string>
     <string name="access_grant_all">Dar acceso a todo</string>
+    <string name="set_accent">Color de acento</string>
+    <string name="accent_coral">Coral</string>
+    <string name="accent_oro">Oro</string>
+    <string name="accent_menta">Menta</string>
+    <string name="accent_rosa">Rosa</string>
+    <string name="accent_zafiro">Zafiro</string>
+    <string name="onb_title">Bienvenido a Lumina</string>
+    <string name="onb_1_t">Privado por diseño</string>
+    <string name="onb_1">Tus fotos y vídeos se quedan en el dispositivo. No se sube nada.</string>
+    <string name="onb_2_t">Tu vida en un mosaico</string>
+    <string name="onb_2">Meses enormes, días con carácter y un carril para saltar por los años.</string>
+    <string name="onb_3_t">Edita sin miedo</string>
+    <string name="onb_3">Cada cambio guarda una copia nueva: el original nunca se toca.</string>
 </resources>

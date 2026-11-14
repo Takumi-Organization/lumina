@@ -55,14 +55,14 @@ class GalleryViewModel(
         }.flowOn(Dispatchers.Default)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    val state: StateFlow<GalleryUiState> = combine(items, favoritesOnly, media.status) { all, onlyFav, status ->
+    val state: StateFlow<GalleryUiState> = combine(items, favoritesOnly, media.status, columns) { all, onlyFav, status, cols ->
         when {
             all == null -> GalleryUiState.Loading
             all.isEmpty() && status.error != null -> GalleryUiState.Failed(status.error, status.detail)
             else -> {
                 val shown = if (onlyFav) all.filter { it.isFavorite } else all
                 if (shown.isEmpty()) GalleryUiState.Empty(onlyFav, status.detail)
-                else GalleryUiState.Content(buildTimeline(shown), shown.size)
+                else GalleryUiState.Content(buildTimeline(shown, target = densityFor(cols)), shown.size)
             }
         }
     }.flowOn(Dispatchers.Default)
@@ -103,6 +103,8 @@ class GalleryViewModel(
     }
 
     companion object {
+        /** Suma de proporciones por fila del mosaico para un «nivel de zoom» (2 = fotos enormes, 7 = muy denso). */
+        fun densityFor(columns: Int) = columns * 0.75f
         const val MIN_COLUMNS = 2
         const val MAX_COLUMNS = 7
         const val DEFAULT_COLUMNS = 4

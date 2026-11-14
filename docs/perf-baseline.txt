@@ -1,0 +1,32 @@
+== baseline (2026-11-14 12:58:41) ==
+25053PC47G
+TotalTime: 264
+WaitTime: 269
+LuminaMedia: MediaStore: 7381 elementos (external/imágenes=6598; external/vídeos=783)
+LuminaPerf: lista compuesta: 242 ms desde el inicio del proceso
+LuminaPerf: primera miniatura: 243 ms desde el inicio del proceso
+LuminaMedia: MediaStore: 7381 elementos (external/imágenes=6598; external/vídeos=783)
+LuminaMedia: MediaStore: 7381 elementos (external/imágenes=6598; external/vídeos=783)
+LuminaMedia: MediaStore: 7381 elementos (external/imágenes=6598; external/vídeos=783)
+LuminaMedia: MediaStore: 7381 elementos (external/imágenes=6598; external/vídeos=783)
+-- 50 deslizamientos rápidos de punta a punta --
+Total frames rendered: 5100
+Janky frames: 1 (0.02%)
+50th percentile: 9ms
+90th percentile: 14ms
+95th percentile: 17ms
+99th percentile: 21ms
+Number Missed Vsync: 0
+Number Slow UI thread: 1
+Number Slow bitmap uploads: 0
+Number Slow issue draw commands: 0
+           Java Heap:    35804                          58744
+         Native Heap:   934556                         936668
+            Graphics:    43252                          43256
+           TOTAL PSS:  1040170            TOTAL RSS:  1192884       TOTAL SWAP PSS:      122
+-- arrastre del scrubber (carril derecho) --
+Total frames rendered: 284
+Janky frames: 0 (0.00%)
+50th percentile: 48ms
+90th percentile: 150ms
+99th percentile: 600ms

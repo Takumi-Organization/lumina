@@ -1,6 +1,5 @@
 package com.adrian.lumina
 
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,8 +62,7 @@ class GalleryScreenTest {
                 )
             }
         }
-        val first = state.timeline.entries.first { it is com.adrian.lumina.domain.model.TimelineEntry.Cell }
-            .let { (it as com.adrian.lumina.domain.model.TimelineEntry.Cell).item.id }
+        val first = state.timeline.items.first().id
         val second = items.first { it.id != first }.id
 
         rule.onNodeWithTag("cell-$first").performClick()
@@ -90,11 +88,11 @@ class GalleryScreenTest {
     }
 
     @Test fun draggingScrubberJumpsFarAndShowsMonthBubble() {
-        var gridState: androidx.compose.foundation.lazy.grid.LazyGridState? = null
+        var gridState: androidx.compose.foundation.lazy.LazyListState? = null
         rule.setContent {
             LuminaTheme {
-                val gs = rememberLazyGridState().also { gridState = it }
-                GalleryScreen(state, emptySet(), 4, false, false, GalleryActions(), gridState = gs)
+                val gs = androidx.compose.foundation.lazy.rememberLazyListState().also { gridState = it }
+                GalleryScreen(state, emptySet(), 4, false, false, GalleryActions(), listState = gs)
             }
         }
         rule.runOnIdle { assertEquals(0, gridState!!.firstVisibleItemIndex) }

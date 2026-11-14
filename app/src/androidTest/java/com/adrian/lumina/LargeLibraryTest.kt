@@ -40,12 +40,12 @@ class LargeLibraryTest {
         println("PERF emulador timeline($n): $buildMs ms")
         assertTrue("timeline tardó $buildMs ms", buildMs < 3_000)
 
-        lateinit var state: androidx.compose.foundation.lazy.grid.LazyGridState
+        lateinit var state: androidx.compose.foundation.lazy.LazyListState
         lateinit var scope: kotlinx.coroutines.CoroutineScope
         rule.setContent {
-            state = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
+            state = androidx.compose.foundation.lazy.rememberLazyListState()
             scope = androidx.compose.runtime.rememberCoroutineScope()
-            LuminaTheme { GalleryScreen(GalleryUiState.Content(timeline, n), emptySet(), 4, false, false, GalleryActions(), gridState = state) }
+            LuminaTheme { GalleryScreen(GalleryUiState.Content(timeline, n), emptySet(), 4, false, false, GalleryActions(), listState = state) }
         }
         rule.waitForIdle()
         val before = usedMb()

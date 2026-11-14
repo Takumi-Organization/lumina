@@ -7,4 +7,17 @@
     <string name="access_partial_title">You only see part of your library</string>
     <string name="access_partial_body">You granted access to selected photos or to only one media type. Grant full access to see everything.</string>
     <string name="access_grant_all">Grant full access</string>
+    <string name="set_accent">Accent color</string>
+    <string name="accent_coral">Coral</string>
+    <string name="accent_oro">Gold</string>
+    <string name="accent_menta">Mint</string>
+    <string name="accent_rosa">Rose</string>
+    <string name="accent_zafiro">Sapphire</string>
+    <string name="onb_title">Welcome to Lumina</string>
+    <string name="onb_1_t">Private by design</string>
+    <string name="onb_1">Your photos and videos stay on the device. Nothing is uploaded.</string>
+    <string name="onb_2_t">Your life as a mosaic</string>
+    <string name="onb_2">Huge months, days with character and a rail to jump through the years.</string>
+    <string name="onb_3_t">Edit fearlessly</string>
+    <string name="onb_3">Every change saves a new copy: the original is never touched.</string>
 </resources>

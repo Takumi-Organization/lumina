@@ -11,7 +11,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -43,17 +42,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.PhotoAlbum
-import androidx.compose.material.icons.rounded.PhotoLibrary
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.outlined.PhotoAlbum
+import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Tune
 import coil3.SingletonImageLoader
 import com.adrian.lumina.domain.model.AppSettings
 import com.adrian.lumina.ui.settings.SettingsScreen
 import com.adrian.lumina.ui.settings.SettingsViewModel
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import com.adrian.lumina.ui.components.LuminaTabs
 import androidx.compose.material3.Text
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -111,7 +109,7 @@ fun LuminaHost(
     val columns by vm.columns.collectAsStateWithLifecycle()
     val favoritesOnly by vm.favoritesOnly.collectAsStateWithLifecycle()
     val viewerId by vm.viewerId.collectAsStateWithLifecycle()
-    val gridState = rememberLazyGridState()
+    val gridState = androidx.compose.foundation.lazy.rememberLazyListState()
     val albumsVm: AlbumsViewModel = viewModel(
         factory = viewModelFactory { initializer { AlbumsViewModel(container.media, container.favorites, container.albums) } }
     )
@@ -137,9 +135,7 @@ fun LuminaHost(
     var dialog by remember { mutableStateOf<AlbumDialog?>(null) }
 
     val timeline = (state as? GalleryUiState.Content)?.timeline
-    val galleryItems: List<MediaItem> = remember(timeline) {
-        timeline?.entries?.filterIsInstance<TimelineEntry.Cell>()?.map { it.item }.orEmpty()
-    }
+    val galleryItems: List<MediaItem> = remember(timeline) { timeline?.items.orEmpty() }
     // El visor recorre lo que se está viendo: el álbum abierto o, si no, la biblioteca.
     val inAlbum = section == Section.ALBUMS && albumDetail != null
     val inSearch = section == Section.SEARCH
@@ -149,7 +145,7 @@ fun LuminaHost(
         else -> galleryItems
     }
     val entryIndexById = remember(timeline) {
-        timeline?.entries?.withIndex()?.mapNotNull { (i, e) -> (e as? TimelineEntry.Cell)?.let { it.item.id to i } }?.toMap().orEmpty()
+        buildMap<Long, Int> { timeline?.entries?.forEachIndexed { i, e -> if (e is TimelineEntry.Row) e.cells.forEach { put(it.item.id, i) } } }
     }
 
     // El resultado del diálogo de papelera no hace falta leerlo: MediaStore notifica el cambio y la lista se refresca.
@@ -210,7 +206,7 @@ fun LuminaHost(
                                 section == Section.LIBRARY -> GalleryScreen(
                                     state = state, selection = selection, columns = columns, favoritesOnly = favoritesOnly,
                                     allSelectedFavorite = selection.isNotEmpty() && vm.allSelectedAreFavorite(),
-                                    actions = actions, gridState = gridState,
+                                    actions = actions, listState = gridState,
                                 )
                                 section == Section.SETTINGS -> SettingsScreen(
                                     settings, storage, BuildConfigVersion, settingsVm::update,
@@ -237,35 +233,22 @@ fun LuminaHost(
                             }
                         }
                         if (access == MediaAccess.PARTIAL && selection.isEmpty()) Row(
-                            Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant).padding(horizontal = 16.dp, vertical = 8.dp).testTag("partial-access-banner"),
+                            Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary).padding(horizontal = 16.dp, vertical = 10.dp).testTag("partial-access-banner"),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Column(Modifier.weight(1f)) {
-                                Text(stringResource(R.string.access_partial_title), style = MaterialTheme.typography.labelMedium)
-                                Text(stringResource(R.string.access_partial_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(stringResource(R.string.access_partial_title).uppercase(), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onPrimary)
+                                Text(stringResource(R.string.access_partial_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimary)
                             }
-                            TextButton(onRequestFullAccess, modifier = Modifier.testTag("grant-full-access")) { Text(stringResource(R.string.access_grant_all)) }
+                            TextButton(onRequestFullAccess, modifier = Modifier.testTag("grant-full-access")) { Text(stringResource(R.string.access_grant_all).uppercase(), color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.labelLarge) }
                         }
-                        if (selection.isEmpty() && albumDetail == null) NavigationBar {
-                            NavigationBarItem(
-                                selected = section == Section.LIBRARY, onClick = { section = Section.LIBRARY },
-                                icon = { Icon(Icons.Rounded.PhotoLibrary, null) }, label = { Text(stringResource(R.string.tab_library)) },
-                                modifier = Modifier.testTag("tab-library"),
-                            )
-                            NavigationBarItem(
-                                selected = section == Section.ALBUMS, onClick = { section = Section.ALBUMS },
-                                icon = { Icon(Icons.Rounded.PhotoAlbum, null) }, label = { Text(stringResource(R.string.tab_albums)) },
-                                modifier = Modifier.testTag("tab-albums"),
-                            )
-                            NavigationBarItem(
-                                selected = section == Section.SEARCH, onClick = { section = Section.SEARCH },
-                                icon = { Icon(Icons.Rounded.Search, null) }, label = { Text(stringResource(R.string.tab_search)) },
-                                modifier = Modifier.testTag("tab-search"),
-                            )
-                            NavigationBarItem(
-                                selected = section == Section.SETTINGS, onClick = { section = Section.SETTINGS },
-                                icon = { Icon(Icons.Rounded.Settings, null) }, label = { Text(stringResource(R.string.tab_settings)) },
-                                modifier = Modifier.testTag("tab-settings"),
+                        if (selection.isEmpty() && albumDetail == null) {
+                            val tabLabels = listOf(R.string.tab_library, R.string.tab_albums, R.string.tab_search, R.string.tab_settings).map { stringResource(it) }
+                            LuminaTabs(
+                                tabLabels,
+                                listOf(Icons.Outlined.PhotoLibrary, Icons.Outlined.PhotoAlbum, Icons.Outlined.Search, Icons.Outlined.Tune),
+                                section.ordinal, { section = Section.entries[it] },
+                                tags = listOf("tab-library", "tab-albums", "tab-search", "tab-settings"),
                             )
                         }
                     }

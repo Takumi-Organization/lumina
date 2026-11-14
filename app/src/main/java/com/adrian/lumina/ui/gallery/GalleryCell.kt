@@ -1,25 +1,23 @@
 package com.adrian.lumina.ui.gallery
 
-import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.snap
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.snap
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,13 +33,10 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
-import com.adrian.lumina.R
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.adrian.lumina.data.media.Thumb
 import com.adrian.lumina.domain.model.MediaItem
@@ -51,9 +46,12 @@ import com.adrian.lumina.ui.components.mediaKey
 import com.adrian.lumina.ui.theme.LocalAnimationsEnabled
 import com.adrian.lumina.ui.theme.LocalHapticsEnabled
 import com.adrian.lumina.ui.theme.LocalThumbSize
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
+import com.adrian.lumina.ui.theme.Springs
 
+/**
+ * Celda del mosaico. Rellena el hueco que le da su fila. Al seleccionar se encoge con un muelle, gana esquinas más
+ * redondeadas y una casilla circular de acento; favorita = corazón; vídeo = duración sobre cápsula oscura.
+ */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun GalleryCell(
@@ -63,69 +61,67 @@ fun GalleryCell(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
+    thumbPx: Int = LocalThumbSize.current,
 ) {
     val haptics = LocalHapticFeedback.current
     val hapticsOn = LocalHapticsEnabled.current
     val animate = LocalAnimationsEnabled.current
-    val target = if (selected) 0.86f else 1f
-    val spec: AnimationSpec<Float> =
-        if (animate) spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium) else snap()
-    val scale by animateFloatAsState(target, spec, label = "cellScale")
-    val lumen = MaterialTheme.colorScheme.primary
+    val scale by animateFloatAsState(if (selected) 0.86f else 1f, if (animate) Springs.bouncy() else snap(), label = "cellScale")
+    val corner by animateFloatAsState(if (selected) 14f else 5f, if (animate) Springs.snappy() else snap(), label = "cellCorner")
+    val accent = MaterialTheme.colorScheme.primary
     val scopes = LocalSharedScopes.current
     val shared = if (scopes != null) with(scopes.shared) {
-        Modifier.sharedBounds(
-            rememberSharedContentState(mediaKey(item.id)), scopes.visibility,
-        )
+        Modifier.sharedBounds(rememberSharedContentState(mediaKey(item.id)), scopes.visibility)
     } else Modifier
     Box(
         modifier
-            .aspectRatio(1f)
             .then(shared)
             .testTag("cell-${item.id}")
             .semantics { this.selected = selected; contentDescription = item.name }
             .combinedClickable(
-                onClick = onClick,
+                interactionSource = androidx.compose.runtime.remember { MutableInteractionSource() }, indication = null,
+                onClick = {
+                    if (hapticsOn && selecting) haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onClick()
+                },
                 onLongClick = { if (hapticsOn) haptics.performHapticFeedback(HapticFeedbackType.LongPress); onLongClick() },
             ),
     ) {
         Box(
-            Modifier.fillMaxSize().scale(scale)
-                .clip(RoundedCornerShape(if (selected) 8.dp else 0.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .then(if (selected) Modifier.border(2.dp, lumen, RoundedCornerShape(8.dp)) else Modifier),
+            Modifier.fillMaxSize().scale(scale).clip(RoundedCornerShape(corner.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
             AsyncImage(
-                model = Thumb(item.uri, LocalThumbSize.current),
+                model = Thumb(item.uri, thumbPx),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
+                onSuccess = { com.adrian.lumina.app.PerfLog.mark("primera miniatura") },
             )
             if (item.isVideo) {
                 Row(
-                    Modifier.align(Alignment.BottomStart).padding(4.dp)
-                        .clip(RoundedCornerShape(50)).background(Color(0x99000000))
-                        .padding(start = 3.dp, end = 7.dp, top = 2.dp, bottom = 2.dp),
+                    Modifier.align(Alignment.BottomStart).padding(6.dp).clip(CircleShape).background(Color(0x99000000))
+                        .padding(start = 4.dp, end = 8.dp, top = 2.dp, bottom = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(Icons.Rounded.PlayArrow, null, tint = Color.White, modifier = Modifier.size(16.dp))
-                    Text(formatClock(item.durationMs), color = Color.White, fontSize = 11.sp)
+                    Icon(Icons.Rounded.PlayArrow, null, tint = Color.White, modifier = Modifier.size(14.dp))
+                    Text(formatClock(item.durationMs), color = Color.White, style = MaterialTheme.typography.labelSmall)
                 }
             }
             if (item.isFavorite) {
                 Icon(
-                    Icons.Rounded.Favorite, stringResource(R.string.favorite), tint = Color.White,
-                    modifier = Modifier.align(Alignment.BottomEnd).padding(5.dp).size(15.dp),
+                    Icons.Filled.Favorite, null, tint = Color.White,
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(7.dp).size(15.dp),
                 )
             }
         }
-        // Marca de selección: círculo vacío visible en modo selección, relleno ámbar al elegir.
+        // Casilla circular: hueca en modo selección, rellena de acento (con un rebote) al elegir.
         if (selecting) {
+            val pop by animateFloatAsState(if (selected) 1f else 0.9f, if (animate) Springs.bouncy() else snap(), label = "checkPop")
             Box(
-                Modifier.align(Alignment.TopStart).padding(7.dp).size(22.dp)
-                    .clip(CircleShape)
-                    .background(if (selected) lumen else Color(0x55000000))
-                    .border(1.5.dp, Color.White, CircleShape),
+                Modifier.align(Alignment.TopStart).padding(8.dp).size(24.dp).scale(pop)
+                    .clip(CircleShape).background(if (selected) accent else Color(0x55000000))
+                    .border(2.dp, Color.White, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 if (selected) Icon(Icons.Rounded.Check, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(15.dp))
