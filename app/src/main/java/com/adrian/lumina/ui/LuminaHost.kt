@@ -52,6 +52,12 @@ import com.adrian.lumina.ui.settings.SettingsScreen
 import com.adrian.lumina.ui.settings.SettingsViewModel
 import androidx.compose.material3.Icon
 import com.adrian.lumina.ui.components.LuminaTabs
+import com.adrian.lumina.ui.components.LocalBottomInset
+import com.adrian.lumina.ui.components.LocalGlassBackdrop
+import com.adrian.lumina.ui.components.TabBarHeight
+import com.adrian.lumina.ui.components.glassSource
+import com.adrian.lumina.ui.components.rememberGlassBackdrop
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.material3.Text
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -205,8 +211,12 @@ fun LuminaHost(
         ) { open ->
             CompositionLocalProvider(LocalSharedScopes provides SharedScopes(this@SharedTransitionLayout, this@AnimatedContent)) {
                 if (!open) {
-                    Column(Modifier.fillMaxSize()) {
-                        Box(Modifier.weight(1f).consumeWindowInsets(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
+                    val tabsShown = selection.isEmpty() && albumDetail == null
+                    val navBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                    val backdrop = rememberGlassBackdrop()
+                    Box(Modifier.fillMaxSize()) {
+                        Box(Modifier.fillMaxSize().glassSource(backdrop).consumeWindowInsets(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
+                          CompositionLocalProvider(LocalBottomInset provides (if (tabsShown) TabBarHeight + navBottom else navBottom)) {
                             when {
                                 section == Section.LIBRARY -> GalleryScreen(
                                     state = state, selection = selection, columns = columns, favoritesOnly = favoritesOnly,
@@ -236,7 +246,9 @@ fun LuminaHost(
                                     onCreate = { dialog = AlbumDialog.New(emptySet()) }, onShowHidden = albumsVm::setShowHidden,
                                 )
                             }
+                          }
                         }
+                        Column(Modifier.align(Alignment.BottomCenter)) {
                         if (access == MediaAccess.PARTIAL && selection.isEmpty()) Row(
                             Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primary).padding(horizontal = 16.dp, vertical = 10.dp).testTag("partial-access-banner"),
                             verticalAlignment = Alignment.CenterVertically,
@@ -247,7 +259,8 @@ fun LuminaHost(
                             }
                             TextButton(onRequestFullAccess, modifier = Modifier.testTag("grant-full-access")) { Text(stringResource(R.string.access_grant_all).uppercase(), color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.labelLarge) }
                         }
-                        if (selection.isEmpty() && albumDetail == null) {
+                        if (tabsShown) {
+                          CompositionLocalProvider(LocalGlassBackdrop provides backdrop) {
                             val tabLabels = listOf(R.string.tab_library, R.string.tab_albums, R.string.tab_search, R.string.tab_settings).map { stringResource(it) }
                             LuminaTabs(
                                 tabLabels,
@@ -255,6 +268,8 @@ fun LuminaHost(
                                 section.ordinal, { section = Section.entries[it] },
                                 tags = listOf("tab-library", "tab-albums", "tab-search", "tab-settings"),
                             )
+                          }
+                        }
                         }
                     }
                 } else {

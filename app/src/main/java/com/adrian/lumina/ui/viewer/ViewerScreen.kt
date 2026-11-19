@@ -63,6 +63,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
+import com.adrian.lumina.ui.components.glass
+import com.adrian.lumina.ui.components.glassSource
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -196,9 +198,10 @@ fun ViewerScreen(
                 )
             },
     ) {
+        val glassBackdrop = com.adrian.lumina.ui.components.rememberGlassBackdrop()
         HorizontalPager(
             state = pager,
-            modifier = Modifier.fillMaxSize().testTag("viewer-pager").graphicsLayer {
+            modifier = Modifier.fillMaxSize().glassSource(glassBackdrop).testTag("viewer-pager").graphicsLayer {
                 translationY = dragY.value
                 val sc = 1f - 0.18f * progress
                 scaleX = sc; scaleY = sc
@@ -229,6 +232,7 @@ fun ViewerScreen(
         }
 
         val chromeAlpha = (1f - progress * 3f).coerceIn(0f, 1f)
+        androidx.compose.runtime.CompositionLocalProvider(com.adrian.lumina.ui.components.LocalGlassBackdrop provides glassBackdrop) {
         AnimatedVisibility(
             chrome, Modifier.align(Alignment.TopCenter).graphicsLayer { alpha = chromeAlpha },
             enter = fadeIn(Springs.snappy()) + slideInVertically(Springs.snappy()) { -it / 2 },
@@ -250,6 +254,7 @@ fun ViewerScreen(
                     onEdit = if (onEdit != null && !current.isVideo) ({ onEdit(current) }) else null,
                 )
             }
+        }
         }
     }
 
@@ -315,10 +320,13 @@ private fun TopBar(item: MediaItem, index: Int, total: Int, onClose: () -> Unit)
         }
         Text(
             stringResource(R.string.viewer_counter, index, total), color = Color.White, style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.clip(CircleShape).background(Color(0x66000000)).padding(horizontal = 12.dp, vertical = 8.dp).testTag("viewer-counter"),
+            modifier = Modifier.glass(CircleShape, tint = ViewerTint).padding(horizontal = 12.dp, vertical = 8.dp).testTag("viewer-counter"),
         )
     }
 }
+
+/** El visor siempre es oscuro: el cristal lleva este velo aunque el tema sea claro, para que los iconos blancos se lean. */
+private val ViewerTint = Color(0xFF0F1115)
 
 /** Barra inferior flotante: cápsula de esquinas continuas, iconos de trazo fino y corazón con rebote. */
 @Composable
@@ -329,7 +337,7 @@ private fun BottomBar(favorite: Boolean, onFavorite: () -> Unit, onShare: () -> 
     val hapticsOn = LocalHapticsEnabled.current
     Row(
         Modifier.navigationBarsPadding().padding(bottom = 14.dp)
-            .shadow(24.dp, SquircleShape(26.dp)).clip(SquircleShape(26.dp)).background(Color(0xB3101116)).padding(horizontal = 10.dp, vertical = 6.dp),
+            .glass(androidx.compose.foundation.shape.RoundedCornerShape(20.dp), tint = ViewerTint).padding(horizontal = 10.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         IconButton(onClick = onShare, modifier = Modifier.testTag("viewer-share")) {

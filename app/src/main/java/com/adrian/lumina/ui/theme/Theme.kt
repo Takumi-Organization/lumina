@@ -24,42 +24,55 @@ import com.adrian.lumina.R
 import com.adrian.lumina.domain.model.AccentChoice
 
 /**
- * Dirección artística «Obsidiana / Marfil»: neutros con matiz (nunca grises puros), un acento vibrante y armónicos
- * cálidos, jerarquía tipográfica por contraste de peso y tamaño, esquinas continuas y profundidad por capas.
+ * Identidad «Ryoku Glass» (2026-11-19, derivada de Ryoku Transit «Pro»): neutros fríos con escalones de superficie,
+ * filetes de 1 dp en lugar de sombras, radios pequeños, solo Inter y UN acento elegible. El cristal (desenfoque real del
+ * contenido) solo se usa en capas flotantes: barras, hojas y burbujas. Spec: vault `Estilo visual Ryoku Glass`.
  */
 object Ink {
-    // Oscuro: negros profundos con un matiz azul muy leve; el acento brilla sobre ellos.
-    val Obsidian = Color(0xFF07070A)
-    val Layer1 = Color(0xFF101117)
-    val Layer2 = Color(0xFF181A22)
-    val Layer3 = Color(0xFF21242E)
-    val DarkLine = Color(0xFF262833)
-    val Snow = Color(0xFFF5F5F8)
-    val Mist = Color(0xFF9EA0AE)
-    val Dusk = Color(0xFF6A6D7C)
+    // Oscuro
+    val Obsidian = Color(0xFF0F1115)   // bg
+    val Layer1 = Color(0xFF171A20)     // surface
+    val Layer2 = Color(0xFF232830)     // surfaceHigh
+    val Layer3 = Color(0xFF2C323C)     // peldaño extra para controles sobre surfaceHigh
+    val DarkLine = Color(0x1AECEFF4)   // filete: tinta al 10 %
+    val Snow = Color(0xFFECEFF4)       // ink
+    val Mist = Color(0xFF8E97A6)       // inkMuted (>= 5,1:1)
+    val Dusk = Color(0xFF5F6877)       // inkFaint: solo decorativo
 
-    // Claro: marfil luminoso, tinta con matiz.
-    val Ivory = Color(0xFFF6F4F0)
+    // Claro
+    val Ivory = Color(0xFFF4F5F7)
     val Pearl = Color(0xFFFFFFFF)
-    val LightLayer = Color(0xFFEDEAE4)
-    val LightLine = Color(0xFFDDD9D1)
-    val Ink = Color(0xFF17161C)
-    val Slate = Color(0xFF6E6D79)
+    val LightLayer = Color(0xFFE9ECF0)
+    val LightLine = Color(0x1C14171C)  // tinta al 11 %
+    val Ink = Color(0xFF14171C)
+    val Slate = Color(0xFF5F6773)
 }
 
-/** Acento principal; los secundarios armónicos (oro, menta, rosa) salen de [Harmony]. */
+/**
+ * Acento (cinco, uno activo). Los nombres del enum se conservan por compatibilidad con lo guardado en DataStore:
+ * CORAL = Bermellón, ZAFIRO = Egeo, ORO = Oro, MENTA = Lima, ROSA = Fucsia.
+ */
 fun AccentChoice.color(dark: Boolean): Color = when (this) {
-    AccentChoice.CORAL -> if (dark) Color(0xFFFF6B4A) else Color(0xFFF0502A)
-    AccentChoice.ORO -> if (dark) Color(0xFFFFC247) else Color(0xFFD98A00)
-    AccentChoice.MENTA -> if (dark) Color(0xFF3DDC97) else Color(0xFF0FA46A)
-    AccentChoice.ROSA -> if (dark) Color(0xFFFF5C8A) else Color(0xFFE02A66)
-    AccentChoice.ZAFIRO -> if (dark) Color(0xFF4D8DFF) else Color(0xFF1F63E6)
+    AccentChoice.CORAL -> if (dark) Color(0xFFFF5A4A) else Color(0xFFD12B1F)
+    AccentChoice.ORO -> if (dark) Color(0xFFF2B33D) else Color(0xFF8F5F00)
+    AccentChoice.MENTA -> if (dark) Color(0xFFB6E04A) else Color(0xFF4F7A00)
+    AccentChoice.ROSA -> if (dark) Color(0xFFFF6FB1) else Color(0xFFC4166F)
+    AccentChoice.ZAFIRO -> if (dark) Color(0xFF62B6E8) else Color(0xFF0B6B99)
+}
+
+/** Texto sobre el relleno del acento: tinta muy oscura teñida en oscuro, blanco en claro (>= 5,1:1 en los 10 casos). */
+fun AccentChoice.onColor(dark: Boolean): Color = if (!dark) Color.White else when (this) {
+    AccentChoice.CORAL -> Color(0xFF1B0805)
+    AccentChoice.ORO -> Color(0xFF1D1300)
+    AccentChoice.MENTA -> Color(0xFF121A00)
+    AccentChoice.ROSA -> Color(0xFF21040F)
+    AccentChoice.ZAFIRO -> Color(0xFF04141D)
 }
 
 object Harmony {
-    val Gold = Color(0xFFFFC247)
-    val Mint = Color(0xFF3DDC97)
-    val Rose = Color(0xFFFF5C8A)
+    val Gold = Color(0xFFF2B33D)
+    val Mint = Color(0xFF6FD3A6)
+    val Rose = Color(0xFFFF7A70)
 }
 
 @OptIn(ExperimentalTextApi::class)
@@ -70,33 +83,33 @@ private fun inter(weight: Int) = Font(
 
 val InterFamily = FontFamily(inter(300), inter(400), inter(500), inter(600), inter(700), inter(800), inter(900))
 
-private fun scheme(dark: Boolean, accent: Color) = if (dark) darkColorScheme(
-    primary = accent, onPrimary = Color(0xFF0A0A0C),
+private fun scheme(dark: Boolean, accent: Color, onAccent: Color) = if (dark) darkColorScheme(
+    primary = accent, onPrimary = onAccent,
     background = Ink.Obsidian, onBackground = Ink.Snow,
     surface = Ink.Layer1, onSurface = Ink.Snow,
     surfaceVariant = Ink.Layer2, onSurfaceVariant = Ink.Mist,
     outline = Ink.DarkLine, outlineVariant = Ink.DarkLine,
-    secondary = Harmony.Gold, onSecondary = Color(0xFF0A0A0C),
-    tertiary = Harmony.Mint, onTertiary = Color(0xFF0A0A0C),
+    secondary = Harmony.Gold, onSecondary = Color(0xFF1D1300),
+    tertiary = Harmony.Mint, onTertiary = Color(0xFF04140D),
     secondaryContainer = Ink.Layer3, onSecondaryContainer = Ink.Snow,
     surfaceContainer = Ink.Layer1, surfaceContainerHigh = Ink.Layer2, surfaceContainerHighest = Ink.Layer3,
     surfaceContainerLow = Ink.Obsidian, surfaceTint = accent,
 ) else lightColorScheme(
-    primary = accent, onPrimary = Color.White,
+    primary = accent, onPrimary = onAccent,
     background = Ink.Ivory, onBackground = Ink.Ink,
     surface = Ink.Pearl, onSurface = Ink.Ink,
     surfaceVariant = Ink.LightLayer, onSurfaceVariant = Ink.Slate,
     outline = Ink.LightLine, outlineVariant = Ink.LightLine,
-    secondary = Color(0xFFD98A00), onSecondary = Color.White,
-    tertiary = Color(0xFF0FA46A), onTertiary = Color.White,
+    secondary = Color(0xFF8F5F00), onSecondary = Color.White,
+    tertiary = Color(0xFF1B6B49), onTertiary = Color.White,
     secondaryContainer = Ink.LightLine, onSecondaryContainer = Ink.Ink,
     surfaceContainer = Ink.Pearl, surfaceContainerHigh = Ink.LightLayer, surfaceContainerHighest = Ink.LightLine,
     surfaceContainerLow = Ink.Ivory, surfaceTint = accent,
 )
 
 private val Rounded = Shapes(
-    extraSmall = RoundedCornerShape(6.dp), small = RoundedCornerShape(10.dp), medium = RoundedCornerShape(14.dp),
-    large = RoundedCornerShape(20.dp), extraLarge = RoundedCornerShape(28.dp),
+    extraSmall = RoundedCornerShape(6.dp), small = RoundedCornerShape(10.dp), medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(16.dp), extraLarge = RoundedCornerShape(20.dp),
 )
 
 private fun t(size: Int, weight: Int, line: Int = (size * 1.25f).toInt(), tracking: Float = 0f) =
@@ -146,13 +159,13 @@ fun LuminaTheme(
     animations: Boolean = true,
     haptics: Boolean = true,
     thumbPx: Int = 320,
-    accent: AccentChoice = AccentChoice.CORAL,
+    accent: AccentChoice = AccentChoice.ORO,
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(
         LocalAnimationsEnabled provides animations, LocalHapticsEnabled provides haptics, LocalThumbSize provides thumbPx, LocalDark provides dark,
     ) {
-        val colors = scheme(dark, accent.color(dark))
+        val colors = scheme(dark, accent.color(dark), accent.onColor(dark))
         MaterialTheme(colorScheme = colors, typography = LuminaTypography, shapes = Rounded) {
             androidx.compose.material3.Surface(color = colors.background, contentColor = colors.onBackground, content = content)
         }

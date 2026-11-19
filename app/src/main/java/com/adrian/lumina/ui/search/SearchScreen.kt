@@ -89,7 +89,7 @@ fun SearchScreen(
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(4),
                         modifier = Modifier.fillMaxSize().navigationBarsPadding().testTag("search-grid"),
-                        contentPadding = PaddingValues(start = 3.dp, end = 3.dp, bottom = 120.dp),
+                        contentPadding = PaddingValues(start = 3.dp, end = 3.dp, bottom = 24.dp + com.adrian.lumina.ui.components.LocalBottomInset.current),
                         horizontalArrangement = Arrangement.spacedBy(3.dp), verticalArrangement = Arrangement.spacedBy(3.dp),
                     ) {
                         items(state.items, key = { it.id }) { GalleryCell(it, selected = false, selecting = false, onClick = { onOpen(it.id) }, onLongClick = {}, modifier = Modifier.aspectRatio(1f)) }

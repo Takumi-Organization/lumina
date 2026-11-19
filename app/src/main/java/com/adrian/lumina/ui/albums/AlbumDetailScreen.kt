@@ -78,7 +78,7 @@ fun AlbumDetailScreen(
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             modifier = Modifier.fillMaxSize().navigationBarsPadding().testTag("album-grid"),
-            contentPadding = PaddingValues(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 72.dp, bottom = 24.dp, start = 2.dp, end = 2.dp),
+            contentPadding = PaddingValues(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 72.dp, bottom = 24.dp + com.adrian.lumina.ui.components.LocalBottomInset.current, start = 2.dp, end = 2.dp),
             horizontalArrangement = Arrangement.spacedBy(3.dp),
             verticalArrangement = Arrangement.spacedBy(3.dp),
         ) {

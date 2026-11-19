@@ -51,7 +51,7 @@ class DataStoreSettings(private val store: DataStore<Preferences>) : SettingsRep
             val cur = AppSettings(
                 p.enum(K.theme, ThemeMode.SYSTEM), p[K.columns] ?: 4, p.enum(K.quality, ThumbQuality.NORMAL),
                 p[K.autoplay] ?: false, p[K.animations] ?: true, p[K.haptics] ?: true,
-                p.enum(K.sort, AlbumSort.MANUAL), p[K.privacy] ?: false, p.enum(K.accent, AccentChoice.CORAL),
+                p.enum(K.sort, AlbumSort.MANUAL), p[K.privacy] ?: false, p.enum(K.accent, AccentChoice.ORO),
             )
             val n = transform(cur).sanitized()
             p[K.theme] = n.theme.name; p[K.accent] = n.accent.name; p[K.columns] = n.defaultColumns; p[K.quality] = n.thumbQuality.name

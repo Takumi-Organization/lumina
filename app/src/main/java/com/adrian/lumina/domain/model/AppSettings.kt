@@ -18,7 +18,7 @@ data class AppSettings(
     val albumSort: AlbumSort = AlbumSort.MANUAL,
     /** Oculta la vista en «recientes» y bloquea capturas de pantalla (FLAG_SECURE). */
     val privacyScreen: Boolean = false,
-    val accent: AccentChoice = AccentChoice.CORAL,
+    val accent: AccentChoice = AccentChoice.ORO,
 ) {
     /** Valores fuera de rango (p. ej. de una versión futura) se acotan al leer. */
     fun sanitized() = copy(defaultColumns = defaultColumns.coerceIn(2, 7))

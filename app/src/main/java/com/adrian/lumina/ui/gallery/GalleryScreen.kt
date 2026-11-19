@@ -23,6 +23,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.ui.graphics.graphicsLayer
+import com.adrian.lumina.ui.components.glassSource
+import com.adrian.lumina.ui.components.glassBar
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -105,11 +108,13 @@ fun GalleryScreen(
     level: com.adrian.lumina.domain.usecase.ZoomLevel = com.adrian.lumina.domain.usecase.ZoomLevel.DAYS,
 ) {
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + TitleBarHeight
-    val pad = PaddingValues(top = top, bottom = 24.dp)
+    val pad = PaddingValues(top = top, bottom = 24.dp + com.adrian.lumina.ui.components.LocalBottomInset.current)
     val selecting = selection.isNotEmpty()
     BackHandler(enabled = selecting) { actions.onClearSelection() }
 
+    val topGlass = com.adrian.lumina.ui.components.rememberGlassBackdrop()
     Box(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        Box(Modifier.fillMaxSize().glassSource(topGlass)) {
         when (state) {
             GalleryUiState.Loading -> LoadingMarks(pad)
             is GalleryUiState.Empty -> if (state.favoritesOnly) EmptyState(
@@ -166,6 +171,8 @@ fun GalleryScreen(
                 }
             }
         }
+        }
+        androidx.compose.runtime.CompositionLocalProvider(com.adrian.lumina.ui.components.LocalGlassBackdrop provides topGlass) {
         AnimatedContent(
             targetState = selecting,
             transitionSpec = { fadeIn() togetherWith fadeOut() },
@@ -173,6 +180,7 @@ fun GalleryScreen(
         ) { sel ->
             if (sel) SelectionBar(selection.size, allSelectedFavorite, actions)
             else TitleBar(state, favoritesOnly, listState, actions)
+        }
         }
     }
 }
@@ -183,11 +191,13 @@ private fun TitleBar(state: GalleryUiState, favoritesOnly: Boolean, listState: L
     // Título grande en la cima; al desplazarse se transforma en el mes actual (fondo translúcido con sombra).
     val atTop by androidx.compose.runtime.remember { androidx.compose.runtime.derivedStateOf { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset < 40 } }
     val mark = timeline?.let { t -> androidx.compose.runtime.remember(t, listState.firstVisibleItemIndex) { t.monthAtEntry(listState.firstVisibleItemIndex) } }
-    val bg by androidx.compose.animation.animateColorAsState(
-        if (atTop) Color.Transparent else glass(), com.adrian.lumina.ui.theme.motion(Springs.smooth()), label = "barBg",
+    val glassAlpha by androidx.compose.animation.core.animateFloatAsState(
+        if (atTop) 0f else 1f, com.adrian.lumina.ui.theme.motion(Springs.smooth()), label = "barBg",
     )
+    Box {
+    Box(Modifier.matchParentSize().graphicsLayer { alpha = glassAlpha }.glassBar())
     Row(
-        Modifier.fillMaxWidth().background(bg).statusBarsPadding().padding(start = 20.dp, end = 6.dp, top = 8.dp, bottom = 6.dp),
+        Modifier.fillMaxWidth().statusBarsPadding().padding(start = 20.dp, end = 6.dp, top = 8.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         androidx.compose.animation.AnimatedContent(
@@ -216,6 +226,7 @@ private fun TitleBar(state: GalleryUiState, favoritesOnly: Boolean, listState: L
             )
         }
     }
+    }
 }
 
 @Composable
@@ -227,7 +238,7 @@ private fun monthTitle(m: java.time.YearMonth): String {
 @Composable
 private fun SelectionBar(count: Int, allFavorite: Boolean, actions: GalleryActions) {
     Row(
-        Modifier.fillMaxWidth().background(glass()).statusBarsPadding().padding(horizontal = 6.dp, vertical = 8.dp),
+        Modifier.fillMaxWidth().glassBar().statusBarsPadding().padding(horizontal = 6.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = actions.onClearSelection, modifier = Modifier.testTag("selection-close")) {

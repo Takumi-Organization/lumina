@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,8 +53,11 @@ fun Hairline(modifier: Modifier = Modifier, color: Color = MaterialTheme.colorSc
 @Composable
 fun glass(): Color = MaterialTheme.colorScheme.surface.copy(alpha = if (LocalDark.current) 0.86f else 0.9f)
 
+/** Alto de la barra de pestañas sin la barra de navegación (54 de contenido + 2×6 de relleno + 2×10 de margen). */
+val TabBarHeight = 86.dp
+
 /**
- * Barra de pestañas flotante: cápsula continua con sombra suave sobre el contenido, iconos de trazo fino, etiqueta bajo
+ * Barra de pestañas flotante: superficie de cristal que desenfoca lo que pasa por debajo, iconos de trazo fino, etiqueta bajo
  * el elegido y un indicador de acento que se desliza con un muelle.
  */
 @Composable
@@ -64,13 +68,11 @@ fun LuminaTabs(
     val c = MaterialTheme.colorScheme
     Box(modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 18.dp, vertical = 10.dp)) {
         BoxWithConstraints(
-            Modifier.fillMaxWidth()
-                .shadow(24.dp, SquircleShape(26.dp), ambientColor = Color.Black, spotColor = Color.Black)
-                .clip(SquircleShape(26.dp)).background(glass()).padding(6.dp),
+            Modifier.fillMaxWidth().glass(RoundedCornerShape(20.dp)).padding(6.dp),
         ) {
             val slot = maxWidth / labels.size
             val x by animateDpAsState(slot * selected, motion(Springs.snappy()), label = "tabX")
-            Box(Modifier.offset(x = x).width(slot).height(54.dp).clip(SquircleShape(20.dp)).background(c.primary.copy(alpha = 0.16f)))
+            Box(Modifier.offset(x = x).width(slot).height(54.dp).clip(RoundedCornerShape(14.dp)).background(c.primary.copy(alpha = if (LocalDark.current) 0.16f else 0.11f)))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 labels.forEachIndexed { i, label ->
                     val on = i == selected
@@ -119,7 +121,7 @@ fun LuminaButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
     val pressed by source.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.96f else 1f, motion(Springs.bouncy()), label = "btn")
     Box(
-        modifier.scale2(scale).clip(SquircleShape(16.dp))
+        modifier.scale2(scale).clip(RoundedCornerShape(10.dp))
             .background(if (filled) c.primary else c.primary.copy(alpha = 0.14f))
             .clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick)
             .padding(horizontal = 24.dp, vertical = 15.dp),
