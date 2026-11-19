@@ -74,7 +74,8 @@ fun Modifier.glass(shape: Shape, blur: Dp = 22.dp, tint: Color? = null, outline:
     val dark = LocalDark.current
     val canBlur = backdrop != null && Build.VERSION.SDK_INT >= 31
     val base = tint ?: MaterialTheme.colorScheme.surface
-    val veil = base.copy(alpha = if (!canBlur) 0.96f else if (dark) 0.64f else 0.7f)
+    val screenBg = tint ?: MaterialTheme.colorScheme.background
+    val veil = base.copy(alpha = if (!canBlur) 0.96f else if (dark) 0.6f else 0.66f)
     val top = if (dark) Color(0x24FFFFFF) else Color(0xE6FFFFFF)
     val edge = if (dark) Color(0x1FECEFF4) else Color(0x1A14171C)
     val own = rememberGraphicsLayer()
@@ -84,6 +85,9 @@ fun Modifier.glass(shape: Shape, blur: Dp = 22.dp, tint: Color? = null, outline:
         .clip(shape)
         .drawBehind {
             if (canBlur && backdrop != null) {
+                // Base opaca (el fondo de la pantalla): la capa grabada solo contiene el contenido, sin fondo; sin esto el
+                // contenido NÍTIDO de debajo se transparenta a través del velo y compite con el desenfocado.
+                drawRect(screenBg)
                 val r = blur.toPx()
                 own.renderEffect = BlurEffect(r, r, TileMode.Clamp)
                 val dx = backdrop.origin.x - pos.x
