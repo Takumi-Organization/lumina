@@ -79,6 +79,7 @@ Sigue la identidad visual de Takumi-Organization: papel negro y tinta clara, mon
 - Las cifras de rendimiento del emulador sirven para comparar versiones, no para prometer fluidez en un móvil concreto.
 - Editor: vista previa en CPU a 1280 px y exportación hasta 4096 px de lado mayor; no se conserva EXIF en copias PNG.
 - Los álbumes ocultos solo se ocultan de la lista; favoritos y álbumes son locales (Room) y no se sincronizan con otras apps.
+- Defectos visuales conocidos, sin corregir: tras abrir una foto aparece un fragmento fantasma de la página siguiente en el borde derecho del visor, y en Álbumes el contador «87» queda pegado al nombre «Photos» junto a «Camera». El botón de información del visor no abrió su panel en una prueba manual (sin confirmar si es un fallo real).
 - No aparecen carpetas con `.nomedia`, archivos pendientes, elementos en papelera ni perfiles de trabajo: Lumina solo lee lo que MediaStore indexa.
 
 ## Licencia
