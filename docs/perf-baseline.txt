@@ -1,5 +1,4 @@
 == baseline (2026-11-14 12:58:41) ==
-25053PC47G
 TotalTime: 264
 WaitTime: 269
 LuminaMedia: MediaStore: 7381 elementos (external/imágenes=6598; external/vídeos=783)
