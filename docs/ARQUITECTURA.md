@@ -77,5 +77,5 @@ Cada fase termina con: compila, tests en verde, ejecución en emulador `Pixel_AP
 ## 5. Riesgos conocidos
 
 - Transición compartida cuadrícula→visor entre pantallas de navegación: `SharedTransitionLayout` de Compose es estable pero delicada con `LazyGrid` + `Pager`; plan B: visor como overlay en el mismo árbol de composición.
-- Bibliotecas reales de miles de fotos: solo hay emulador; se siembra con imágenes generadas (`tools/seed-media.sh`). El rendimiento en el móvil físico (25053PC47G) queda como prueba manual de Adrián.
+- Bibliotecas reales de miles de fotos: solo hay emulador; se siembra con imágenes generadas (`tools/seed-media.sh`). El rendimiento en el móvil físico queda como prueba manual.
 - Edición de «Sombras/Altas luces» sin shader AGSL en API <33: fallback por LUT en CPU para exportación y vista previa reducida.
