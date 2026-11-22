@@ -2,7 +2,7 @@ package com.adrian.lumina.ui.theme
 
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
@@ -18,127 +18,133 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.adrian.lumina.R
 import com.adrian.lumina.domain.model.AccentChoice
 
 /**
- * Identidad «Ryoku Glass» (2026-11-19, derivada de Ryoku Transit «Pro»): neutros fríos con escalones de superficie,
- * filetes de 1 dp en lugar de sombras, radios pequeños, solo Inter y UN acento elegible. El cristal (desenfoque real del
- * contenido) solo se usa en capas flotantes: barras, hojas y burbujas. Spec: vault `Estilo visual Ryoku Glass`.
+ * Identidad Takumi (v1, tokens de `takumi-design/tokens.json`): papel negro y tinta `#F2F2F2`, monocromo estricto
+ * (sin acento, degradado ni cristal), radio 0 con la esquina superior derecha cortada en diagonal, Outfit fina y ancha
+ * para títulos y JetBrains Mono para datos y etiquetas. Seleccionado = inversión (fondo tinta, texto fondo).
  */
 object Ink {
-    // Oscuro
-    val Obsidian = Color(0xFF0F1115)   // bg
-    val Layer1 = Color(0xFF171A20)     // surface
-    val Layer2 = Color(0xFF232830)     // surfaceHigh
-    val Layer3 = Color(0xFF2C323C)     // peldaño extra para controles sobre surfaceHigh
-    val DarkLine = Color(0x1AECEFF4)   // filete: tinta al 10 %
-    val Snow = Color(0xFFECEFF4)       // ink
-    val Mist = Color(0xFF8E97A6)       // inkMuted (>= 5,1:1)
-    val Dusk = Color(0xFF5F6877)       // inkFaint: solo decorativo
+    // Oscuro (por defecto)
+    val Obsidian = Color(0xFF000000)   // fondo
+    val Layer1 = Color(0xFF080808)     // panel
+    val Layer2 = Color(0xFF111111)     // elevado
+    val Layer3 = Color(0xFF1C1C1C)     // línea (también peldaño sobre «elevado»)
+    val DarkLine = Color(0xFF3A3A3A)   // línea alta: bordes de tarjetas y controles
+    val DarkHair = Color(0xFF1C1C1C)   // línea: separadores de filas
+    val Snow = Color(0xFFF2F2F2)       // tinta
+    val Mist = Color(0xFF8C8C8C)       // tinta apagada
+    val Dusk = Color(0xFF4A4A4A)       // tenue: solo decorativo
 
-    // Claro
-    val Ivory = Color(0xFFF4F5F7)
+    // Claro («papel»)
+    val Ivory = Color(0xFFF4F4F4)
     val Pearl = Color(0xFFFFFFFF)
-    val LightLayer = Color(0xFFE9ECF0)
-    val LightLine = Color(0x1C14171C)  // tinta al 11 %
-    val Ink = Color(0xFF14171C)
-    val Slate = Color(0xFF5F6773)
+    val LightLayer = Color(0xFFEBEBEB)
+    val LightLine = Color(0xFFC0C0C0)
+    val LightHair = Color(0xFFE0E0E0)
+    val Ink = Color(0xFF0A0A0A)
+    val Slate = Color(0xFF6B6B6B)
 }
 
 /**
- * Acento (cinco, uno activo). Los nombres del enum se conservan por compatibilidad con lo guardado en DataStore:
- * CORAL = Bermellón, ZAFIRO = Egeo, ORO = Oro, MENTA = Lima, ROSA = Fucsia.
+ * Takumi no tiene acento: cualquier valor guardado de `AccentChoice` (se conserva el enum para no romper DataStore)
+ * resuelve a la tinta. El ajuste ya no se muestra.
  */
-fun AccentChoice.color(dark: Boolean): Color = when (this) {
-    AccentChoice.CORAL -> if (dark) Color(0xFFFF5A4A) else Color(0xFFD12B1F)
-    AccentChoice.ORO -> if (dark) Color(0xFFF2B33D) else Color(0xFF8F5F00)
-    AccentChoice.MENTA -> if (dark) Color(0xFFB6E04A) else Color(0xFF4F7A00)
-    AccentChoice.ROSA -> if (dark) Color(0xFFFF6FB1) else Color(0xFFC4166F)
-    AccentChoice.ZAFIRO -> if (dark) Color(0xFF62B6E8) else Color(0xFF0B6B99)
-}
+@Suppress("UnusedReceiverParameter")
+fun AccentChoice.color(dark: Boolean): Color = if (dark) Ink.Snow else Ink.Ink
 
-/** Texto sobre el relleno del acento: tinta muy oscura teñida en oscuro, blanco en claro (>= 5,1:1 en los 10 casos). */
-fun AccentChoice.onColor(dark: Boolean): Color = if (!dark) Color.White else when (this) {
-    AccentChoice.CORAL -> Color(0xFF1B0805)
-    AccentChoice.ORO -> Color(0xFF1D1300)
-    AccentChoice.MENTA -> Color(0xFF121A00)
-    AccentChoice.ROSA -> Color(0xFF21040F)
-    AccentChoice.ZAFIRO -> Color(0xFF04141D)
-}
+@Suppress("UnusedReceiverParameter")
+fun AccentChoice.onColor(dark: Boolean): Color = if (dark) Color.Black else Ink.Ivory
 
+/** Sin color de apoyo: lo secundario se resuelve con luminancia. */
 object Harmony {
-    val Gold = Color(0xFFF2B33D)
-    val Mint = Color(0xFF6FD3A6)
-    val Rose = Color(0xFFFF7A70)
+    val Gold = Ink.Mist
+    val Mint = Ink.Mist
+    /** Favorito: la tinta (el corazón se distingue por relleno, no por color). */
+    val Rose = Ink.Snow
 }
 
 @OptIn(ExperimentalTextApi::class)
-private fun inter(weight: Int) = Font(
-    R.font.inter_variable, FontWeight(weight),
-    variationSettings = FontVariation.Settings(FontVariation.weight(weight), FontVariation.opticalSizing(24.sp)),
+private fun outfit(weight: Int) = Font(
+    R.font.outfit_variable, FontWeight(weight), variationSettings = FontVariation.Settings(FontVariation.weight(weight)),
 )
 
-val InterFamily = FontFamily(inter(300), inter(400), inter(500), inter(600), inter(700), inter(800), inter(900))
+val OutfitFamily = FontFamily(outfit(200), outfit(300), outfit(400), outfit(500), outfit(600))
+val MonoFamily = FontFamily(
+    Font(R.font.jetbrains_mono_regular, FontWeight.Normal), Font(R.font.jetbrains_mono_medium, FontWeight.Medium),
+)
 
-private fun scheme(dark: Boolean, accent: Color, onAccent: Color) = if (dark) darkColorScheme(
-    primary = accent, onPrimary = onAccent,
+private fun scheme(dark: Boolean) = if (dark) darkColorScheme(
+    primary = Ink.Snow, onPrimary = Color.Black,
     background = Ink.Obsidian, onBackground = Ink.Snow,
     surface = Ink.Layer1, onSurface = Ink.Snow,
     surfaceVariant = Ink.Layer2, onSurfaceVariant = Ink.Mist,
-    outline = Ink.DarkLine, outlineVariant = Ink.DarkLine,
-    secondary = Harmony.Gold, onSecondary = Color(0xFF1D1300),
-    tertiary = Harmony.Mint, onTertiary = Color(0xFF04140D),
+    outline = Ink.DarkLine, outlineVariant = Ink.DarkHair,
+    secondary = Color(0xFFC9C9C9), onSecondary = Color.Black,
+    tertiary = Ink.Mist, onTertiary = Color.Black,
+    error = Ink.Snow, onError = Color.Black,
     secondaryContainer = Ink.Layer3, onSecondaryContainer = Ink.Snow,
     surfaceContainer = Ink.Layer1, surfaceContainerHigh = Ink.Layer2, surfaceContainerHighest = Ink.Layer3,
-    surfaceContainerLow = Ink.Obsidian, surfaceTint = accent,
+    surfaceContainerLow = Ink.Obsidian, surfaceTint = Color.Transparent,
 ) else lightColorScheme(
-    primary = accent, onPrimary = onAccent,
+    primary = Ink.Ink, onPrimary = Ink.Ivory,
     background = Ink.Ivory, onBackground = Ink.Ink,
     surface = Ink.Pearl, onSurface = Ink.Ink,
     surfaceVariant = Ink.LightLayer, onSurfaceVariant = Ink.Slate,
-    outline = Ink.LightLine, outlineVariant = Ink.LightLine,
-    secondary = Color(0xFF8F5F00), onSecondary = Color.White,
-    tertiary = Color(0xFF1B6B49), onTertiary = Color.White,
-    secondaryContainer = Ink.LightLine, onSecondaryContainer = Ink.Ink,
-    surfaceContainer = Ink.Pearl, surfaceContainerHigh = Ink.LightLayer, surfaceContainerHighest = Ink.LightLine,
-    surfaceContainerLow = Ink.Ivory, surfaceTint = accent,
+    outline = Ink.LightLine, outlineVariant = Ink.LightHair,
+    secondary = Color(0xFF333333), onSecondary = Ink.Ivory,
+    tertiary = Ink.Slate, onTertiary = Ink.Ivory,
+    error = Ink.Ink, onError = Ink.Ivory,
+    secondaryContainer = Ink.LightHair, onSecondaryContainer = Ink.Ink,
+    surfaceContainer = Ink.Pearl, surfaceContainerHigh = Ink.LightLayer, surfaceContainerHighest = Ink.LightHair,
+    surfaceContainerLow = Ink.Ivory, surfaceTint = Color.Transparent,
 )
 
-private val Rounded = Shapes(
-    extraSmall = RoundedCornerShape(6.dp), small = RoundedCornerShape(10.dp), medium = RoundedCornerShape(12.dp),
-    large = RoundedCornerShape(16.dp), extraLarge = RoundedCornerShape(20.dp),
+/** Corte diagonal del logo en la esquina superior derecha (máx. 22 dp, el «lg» de Takumi); el resto, ángulo recto. */
+fun TakumiCut(cut: Dp) = CutCornerShape(topStart = 0.dp, topEnd = cut.coerceAtMost(22.dp), bottomEnd = 0.dp, bottomStart = 0.dp)
+val TakumiSm = TakumiCut(10.dp)
+val TakumiMd = TakumiCut(14.dp)
+val TakumiLg = TakumiCut(22.dp)
+
+private val TakumiShapes = Shapes(
+    extraSmall = TakumiCut(6.dp), small = TakumiSm, medium = TakumiMd, large = TakumiLg, extraLarge = TakumiLg,
 )
 
-private fun t(size: Int, weight: Int, line: Int = (size * 1.25f).toInt(), tracking: Float = 0f) =
-    TextStyle(fontFamily = InterFamily, fontWeight = FontWeight(weight), fontSize = size.sp, lineHeight = line.sp, letterSpacing = tracking.sp, fontFeatureSettings = "tnum, ss01")
+private fun ui(size: Int, weight: Int, line: Int = (size * 1.35f).toInt(), tracking: Float = 0f) =
+    TextStyle(fontFamily = OutfitFamily, fontWeight = FontWeight(weight), fontSize = size.sp, lineHeight = line.sp, letterSpacing = tracking.sp)
+
+private fun mono(size: Int, weight: Int = 400, line: Int = (size * 1.5f).toInt(), tracking: Float = 0f) =
+    TextStyle(fontFamily = MonoFamily, fontWeight = FontWeight(weight), fontSize = size.sp, lineHeight = line.sp, letterSpacing = tracking.sp, fontFeatureSettings = "tnum")
 
 private val LuminaTypography = Typography(
-    displayLarge = t(56, 800, 56, -2f),     // mes gigante
-    displayMedium = t(40, 800, 42, -1.4f),  // números de gran tamaño
-    displaySmall = t(30, 700, 34, -0.8f),
-    headlineLarge = t(34, 700, 38, -1f),    // título grande de pantalla
-    headlineMedium = t(28, 700, 32, -0.8f),
-    headlineSmall = t(22, 700, 26, -0.5f),
-    titleLarge = t(20, 650, 24, -0.4f),
-    titleMedium = t(16, 600, 22, -0.2f),
-    titleSmall = t(14, 600, 20, -0.1f),
-    bodyLarge = t(16, 400, 24),
-    bodyMedium = t(14, 400, 20),
-    bodySmall = t(12, 400, 17),
-    labelLarge = t(15, 600, 20),
-    labelMedium = t(12, 600, 16, 0.2f),
-    labelSmall = t(11, 600, 14, 0.4f),
+    displayLarge = ui(52, 200, 58, 2f),      // mes gigante
+    displayMedium = mono(34, 400, 40),       // cifras grandes (datos en mono)
+    displaySmall = ui(30, 200, 36, 1f),
+    headlineLarge = ui(30, 200, 38, 4f),     // título de pantalla: fina, ancha
+    headlineMedium = ui(26, 200, 32, 3f),
+    headlineSmall = ui(22, 200, 28, 2f),
+    titleLarge = ui(20, 300, 26, 1f),
+    titleMedium = ui(16, 400, 22, 0.5f),
+    titleSmall = ui(14, 500, 20, 0.5f),
+    bodyLarge = ui(16, 300, 24),
+    bodyMedium = ui(14, 300, 20),
+    bodySmall = ui(13, 300, 18),
+    labelLarge = mono(13, 500, 18, 1.2f),    // botones y píldoras: mono espaciada
+    labelMedium = mono(12, 400, 16, 1.4f),
+    labelSmall = mono(11, 400, 14, 1.2f),
 )
 
-/** Muelles con nombre: toda la interacción de Lumina usa física de muelle, no curvas lineales. */
+/** Muelles con nombre (Takumi pide movimiento sin rebotes: todos críticamente amortiguados). */
 object Springs {
-    fun <T> snappy() = spring<T>(dampingRatio = 0.82f, stiffness = 520f)
-    fun <T> smooth() = spring<T>(dampingRatio = 0.9f, stiffness = 260f)
-    fun <T> bouncy() = spring<T>(dampingRatio = 0.5f, stiffness = 420f)
-    fun <T> gentle() = spring<T>(dampingRatio = 1f, stiffness = 120f)
+    fun <T> snappy() = spring<T>(dampingRatio = 1f, stiffness = 700f)
+    fun <T> smooth() = spring<T>(dampingRatio = 1f, stiffness = 320f)
+    fun <T> bouncy() = spring<T>(dampingRatio = 1f, stiffness = 520f)
+    fun <T> gentle() = spring<T>(dampingRatio = 1f, stiffness = 140f)
 }
 
 /** Respeta «reducir animaciones»: con el ajuste (o la escala del sistema) apagado, cualquier muelle pasa a ser instantáneo. */
@@ -159,14 +165,14 @@ fun LuminaTheme(
     animations: Boolean = true,
     haptics: Boolean = true,
     thumbPx: Int = 320,
-    accent: AccentChoice = AccentChoice.ORO,
+    @Suppress("UNUSED_PARAMETER") accent: AccentChoice = AccentChoice.ORO,
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(
         LocalAnimationsEnabled provides animations, LocalHapticsEnabled provides haptics, LocalThumbSize provides thumbPx, LocalDark provides dark,
     ) {
-        val colors = scheme(dark, accent.color(dark), accent.onColor(dark))
-        MaterialTheme(colorScheme = colors, typography = LuminaTypography, shapes = Rounded) {
+        val colors = scheme(dark)
+        MaterialTheme(colorScheme = colors, typography = LuminaTypography, shapes = TakumiShapes) {
             androidx.compose.material3.Surface(color = colors.background, contentColor = colors.onBackground, content = content)
         }
     }

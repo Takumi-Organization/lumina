@@ -1,6 +1,8 @@
 package com.adrian.lumina.ui.gallery
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import com.adrian.lumina.ui.theme.TakumiCut
+import com.adrian.lumina.ui.theme.TakumiSm
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -13,8 +15,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.Check
@@ -66,7 +66,7 @@ fun GalleryCell(
     val hapticsOn = LocalHapticsEnabled.current
     val animate = LocalAnimationsEnabled.current
     val scale by animateFloatAsState(if (selected) 0.86f else 1f, if (animate) Springs.bouncy() else snap(), label = "cellScale")
-    val corner by animateFloatAsState(if (selected) 14f else 5f, if (animate) Springs.snappy() else snap(), label = "cellCorner")
+    val corner by animateFloatAsState(if (selected) 10f else 0f, if (animate) Springs.snappy() else snap(), label = "cellCorner")
     val accent = MaterialTheme.colorScheme.primary
     Box(
         modifier
@@ -83,7 +83,7 @@ fun GalleryCell(
             ),
     ) {
         Box(
-            Modifier.fillMaxSize().scale(scale).clip(RoundedCornerShape(corner.dp))
+            Modifier.fillMaxSize().scale(scale).clip(TakumiCut(corner.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
             AsyncImage(
@@ -95,7 +95,7 @@ fun GalleryCell(
             )
             if (item.isVideo) {
                 Row(
-                    Modifier.align(Alignment.BottomStart).padding(6.dp).clip(CircleShape).background(Color(0x99000000))
+                    Modifier.align(Alignment.BottomStart).padding(6.dp).clip(TakumiSm).background(Color(0x99000000))
                         .padding(start = 4.dp, end = 8.dp, top = 2.dp, bottom = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -115,8 +115,8 @@ fun GalleryCell(
             val pop by animateFloatAsState(if (selected) 1f else 0.9f, if (animate) Springs.bouncy() else snap(), label = "checkPop")
             Box(
                 Modifier.align(Alignment.TopStart).padding(8.dp).size(24.dp).scale(pop)
-                    .clip(CircleShape).background(if (selected) accent else Color(0x55000000))
-                    .border(2.dp, Color.White, CircleShape),
+                    .clip(TakumiSm).background(if (selected) accent else Color(0x55000000))
+                    .border(2.dp, Color.White, TakumiSm),
                 contentAlignment = Alignment.Center,
             ) {
                 if (selected) Icon(Icons.Outlined.Check, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(15.dp))

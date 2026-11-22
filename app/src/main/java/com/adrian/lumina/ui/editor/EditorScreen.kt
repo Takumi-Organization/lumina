@@ -1,6 +1,8 @@
 package com.adrian.lumina.ui.editor
 
 import android.widget.Toast
+import com.adrian.lumina.ui.theme.TakumiCut
+import com.adrian.lumina.ui.theme.TakumiSm
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -34,7 +36,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.draw.clip
 import com.adrian.lumina.ui.components.LuminaPill
-import com.adrian.lumina.ui.theme.SquircleShape
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -165,7 +166,7 @@ fun EditorScreen(vm: EditorViewModel, onClose: () -> Unit, modifier: Modifier = 
             if (looks.isNotEmpty()) Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 looks.forEach { (look, bmp) ->
                     Column(Modifier.clickable { vm.applyLook(look) }.testTag("look-${look.name}"), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Image(bmp.asImageBitmap(), null, Modifier.size(72.dp).clip(SquircleShape(16.dp)), contentScale = ContentScale.Crop)
+                        Image(bmp.asImageBitmap(), null, Modifier.size(72.dp).clip(TakumiCut(16.dp)), contentScale = ContentScale.Crop)
                         Text(stringResource(lookLabel(look)), style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(top = 4.dp))
                     }
                 }

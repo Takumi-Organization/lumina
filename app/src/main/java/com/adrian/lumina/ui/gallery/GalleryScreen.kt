@@ -1,6 +1,8 @@
 package com.adrian.lumina.ui.gallery
 
 import androidx.activity.compose.BackHandler
+import com.adrian.lumina.ui.theme.TakumiCut
+import com.adrian.lumina.ui.theme.TakumiSm
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -274,7 +276,7 @@ private fun LoadingMarks(pad: PaddingValues) {
     Column(Modifier.fillMaxSize().padding(pad), verticalArrangement = Arrangement.spacedBy(GAP.dp)) {
         repeat(5) { r ->
             Row(Modifier.fillMaxWidth().aspectRatio(if (r % 2 == 0) 3f else 2.2f), horizontalArrangement = Arrangement.spacedBy(GAP.dp)) {
-                repeat(if (r % 2 == 0) 3 else 2) { Box(Modifier.weight(1f).fillMaxHeight().clip(androidx.compose.foundation.shape.RoundedCornerShape(5.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) }
+                repeat(if (r % 2 == 0) 3 else 2) { Box(Modifier.weight(1f).fillMaxHeight().clip(TakumiCut(5.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) }
             }
         }
     }
@@ -402,7 +404,7 @@ private fun DayTag(entry: TimelineEntry.Day, selecting: Boolean, allSelected: Bo
             Text(
                 stringResource(if (allSelected) R.string.deselect_day else R.string.select_day),
                 style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clip(androidx.compose.foundation.shape.CircleShape).clickable(onClick = onClick)
+                modifier = Modifier.clip(TakumiSm).clickable(onClick = onClick)
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)).padding(horizontal = 12.dp, vertical = 5.dp),
             )
         } else Text("${entry.count}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

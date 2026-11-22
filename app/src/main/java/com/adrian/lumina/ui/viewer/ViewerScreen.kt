@@ -1,6 +1,8 @@
 package com.adrian.lumina.ui.viewer
 
 import android.app.Activity
+import com.adrian.lumina.ui.theme.TakumiCut
+import com.adrian.lumina.ui.theme.TakumiSm
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -40,7 +42,6 @@ import com.adrian.lumina.ui.theme.Ink
 import com.adrian.lumina.ui.theme.LocalAnimationsEnabled
 import com.adrian.lumina.ui.theme.LocalHapticsEnabled
 import com.adrian.lumina.ui.theme.Springs
-import com.adrian.lumina.ui.theme.SquircleShape
 import java.util.Locale
 import kotlin.math.abs
 import kotlinx.coroutines.Dispatchers
@@ -66,7 +67,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import com.adrian.lumina.ui.components.glass
 import com.adrian.lumina.ui.components.glassSource
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
@@ -170,7 +170,6 @@ fun ViewerScreen(
     // Fondo vivo: matiz oscuro y resplandor de la paleta dominante de la foto, con transición de muelle al cambiar de página.
     val tints = rememberDominantTints(current)
     val bg by animateColorAsState(tints.first, Springs.smooth(), label = "viewerBg")
-    val glow by animateColorAsState(tints.second, Springs.smooth(), label = "viewerGlow")
     val scope = rememberCoroutineScope()
     val dragY = remember { Animatable(0f) }
     val density = LocalDensity.current
@@ -182,9 +181,6 @@ fun ViewerScreen(
         modifier.fillMaxSize()
             .drawBehind {
                 drawRect(bg.copy(alpha = 1f - progress * 0.92f))
-                drawRect(
-                    Brush.radialGradient(listOf(glow.copy(alpha = glow.alpha * (1f - progress)), Color.Transparent), center = Offset(size.width / 2f, size.height * 0.3f), radius = size.width * 1.1f),
-                )
             }
             // Arrastrar hacia abajo o arriba (sin zoom) cierra el visor: la foto se encoge y el fondo se atenúa.
             .pointerInput(zoomed, current.id) {
@@ -311,7 +307,7 @@ private fun TopBar(item: MediaItem, index: Int, total: Int, onClose: () -> Unit)
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            Modifier.size(44.dp).clip(CircleShape).background(Color(0x66000000)).clickable(onClick = onClose).testTag("viewer-close"),
+            Modifier.size(44.dp).clip(TakumiSm).background(Color(0x66000000)).clickable(onClick = onClose).testTag("viewer-close"),
             contentAlignment = Alignment.Center,
         ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back), tint = Color.White) }
         Column(Modifier.weight(1f).padding(horizontal = 14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -320,13 +316,13 @@ private fun TopBar(item: MediaItem, index: Int, total: Int, onClose: () -> Unit)
         }
         Text(
             stringResource(R.string.viewer_counter, index, total), color = Color.White, style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.glass(CircleShape, tint = ViewerTint).padding(horizontal = 12.dp, vertical = 8.dp).testTag("viewer-counter"),
+            modifier = Modifier.glass(TakumiSm, tint = ViewerTint).padding(horizontal = 12.dp, vertical = 8.dp).testTag("viewer-counter"),
         )
     }
 }
 
 /** El visor siempre es oscuro: el cristal lleva este velo aunque el tema sea claro, para que los iconos blancos se lean. */
-private val ViewerTint = Color(0xFF0F1115)
+private val ViewerTint = Color(0xFF000000)
 
 /** Barra inferior flotante: cápsula de esquinas continuas, iconos de trazo fino y corazón con rebote. */
 @Composable
@@ -337,7 +333,7 @@ private fun BottomBar(favorite: Boolean, onFavorite: () -> Unit, onShare: () -> 
     val hapticsOn = LocalHapticsEnabled.current
     Row(
         Modifier.navigationBarsPadding().padding(bottom = 14.dp)
-            .glass(androidx.compose.foundation.shape.RoundedCornerShape(20.dp), tint = ViewerTint).padding(horizontal = 10.dp, vertical = 6.dp),
+            .glass(TakumiCut(20.dp), tint = ViewerTint).padding(horizontal = 10.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         IconButton(onClick = onShare, modifier = Modifier.testTag("viewer-share")) {
@@ -365,34 +361,10 @@ private fun BottomBar(favorite: Boolean, onFavorite: () -> Unit, onShare: () -> 
     }
 }
 
-/** Colores del visor para una foto: (fondo oscuro, resplandor), calculados fuera del hilo principal y cacheados. */
+/** Takumi: el visor es negro puro; ya no se tiñe con la paleta dominante de la foto. */
 @Composable
-private fun rememberDominantTints(item: MediaItem): Pair<Color, Color> {
-    val context = LocalContext.current
-    val fallback = Pair(Ink.Obsidian, Color.Transparent)
-    val state = produceState(DominantCache[item.id] ?: fallback, item.id) {
-        DominantCache[item.id]?.let { value = it; return@produceState }
-        val tints = withContext(Dispatchers.Default) {
-            runCatching {
-                val result = SingletonImageLoader.get(context).execute(
-                    ImageRequest.Builder(context).data(Thumb(item.uri, 96)).size(48, 48).allowHardware(false).build(),
-                )
-                val bmp = result.image?.toBitmap(48, 48) ?: return@runCatching null
-                val px = IntArray(bmp.width * bmp.height).also { bmp.getPixels(it, 0, bmp.width, 0, 0, bmp.width, bmp.height) }
-                val dom = dominantColor(px)
-                Pair(Color(backgroundTint(dom)), Color(glowTint(dom)).copy(alpha = 0.42f))
-            }.getOrNull()
-        }
-        if (tints != null) { DominantCache[item.id] = tints; value = tints }
-    }
-    return state.value
-}
-
-private object DominantCache {
-    private val map = object : android.util.LruCache<Long, Pair<Color, Color>>(300) {}
-    operator fun get(id: Long): Pair<Color, Color>? = map.get(id)
-    operator fun set(id: Long, v: Pair<Color, Color>) { map.put(id, v) }
-}
+@Suppress("UNUSED_PARAMETER")
+private fun rememberDominantTints(item: MediaItem): Pair<Color, Color> = Pair(Color.Black, Color.Transparent)
 
 /** El visor siempre es negro: los iconos de la barra de estado/navegación deben ser claros. */
 @Composable

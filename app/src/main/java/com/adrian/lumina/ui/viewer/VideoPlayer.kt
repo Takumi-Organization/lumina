@@ -1,6 +1,8 @@
 package com.adrian.lumina.ui.viewer
 
 import android.app.Activity
+import com.adrian.lumina.ui.theme.TakumiCut
+import com.adrian.lumina.ui.theme.TakumiSm
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -15,8 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
@@ -164,7 +164,7 @@ fun VideoPage(
             Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onTap = { onTap() }) })
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Box(
-                    Modifier.size(72.dp).clip(CircleShape).background(Color(0x99000000))
+                    Modifier.size(72.dp).clip(TakumiSm).background(Color(0x99000000))
                         .clickable { started = true }.testTag("video-start"),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -209,14 +209,14 @@ private fun ActiveVideo(player: ExoPlayer, onTap: () -> Unit) {
             Box(Modifier.fillMaxSize().padding(horizontal = 48.dp), contentAlignment = if (feedbackLeft) Alignment.CenterStart else Alignment.CenterEnd) {
                 Text(
                     it, color = Color.White, style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.clip(RoundedCornerShape(50)).background(Color(0x99000000)).padding(horizontal = 16.dp, vertical = 10.dp)
+                    modifier = Modifier.clip(TakumiSm).background(Color(0x99000000)).padding(horizontal = 16.dp, vertical = 10.dp)
                         .testTag("video-seek-feedback"),
                 )
             }
         }
         if (snap.ended) {
             Box(
-                Modifier.size(72.dp).clip(CircleShape).background(Color(0x99000000))
+                Modifier.size(72.dp).clip(TakumiSm).background(Color(0x99000000))
                     .clickable { player.seekTo(0); player.play() }.testTag("video-replay"),
                 contentAlignment = Alignment.Center,
             ) { Icon(Icons.Outlined.Replay, stringResource(R.string.video_replay), tint = Color.White, modifier = Modifier.size(44.dp)) }

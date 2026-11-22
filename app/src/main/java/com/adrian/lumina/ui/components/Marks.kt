@@ -1,9 +1,12 @@
 package com.adrian.lumina.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import com.adrian.lumina.ui.theme.TakumiCut
+import com.adrian.lumina.ui.theme.TakumiSm
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -21,7 +24,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,11 +43,10 @@ import androidx.compose.material3.Icon
 import com.adrian.lumina.ui.theme.LocalDark
 import com.adrian.lumina.ui.theme.Springs
 import com.adrian.lumina.ui.theme.motion
-import com.adrian.lumina.ui.theme.SquircleShape
 
 /** Línea fina de 0,5-1 dp (separador de listas, estilo iOS). */
 @Composable
-fun Hairline(modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.outline) {
+fun Hairline(modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.outlineVariant) {
     Box(modifier.fillMaxWidth().height(1.dp).background(color))
 }
 
@@ -68,15 +69,15 @@ fun LuminaTabs(
     val c = MaterialTheme.colorScheme
     Box(modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 18.dp, vertical = 10.dp)) {
         BoxWithConstraints(
-            Modifier.fillMaxWidth().glass(RoundedCornerShape(20.dp)).padding(6.dp),
+            Modifier.fillMaxWidth().glass(TakumiCut(20.dp)).padding(6.dp),
         ) {
             val slot = maxWidth / labels.size
             val x by animateDpAsState(slot * selected, motion(Springs.snappy()), label = "tabX")
-            Box(Modifier.offset(x = x).width(slot).height(54.dp).clip(RoundedCornerShape(14.dp)).background(c.primary.copy(alpha = if (LocalDark.current) 0.16f else 0.11f)))
+            Box(Modifier.offset(x = x).width(slot).height(54.dp).clip(TakumiCut(14.dp)).background(c.primary))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 labels.forEachIndexed { i, label ->
                     val on = i == selected
-                    val tint by animateColorAsState(if (on) c.primary else c.onSurfaceVariant, motion(Springs.snappy()), label = "tabTint")
+                    val tint by animateColorAsState(if (on) c.onPrimary else c.onSurfaceVariant, motion(Springs.snappy()), label = "tabTint")
                     val scale by animateFloatAsState(if (on) 1f else 0.94f, motion(Springs.bouncy()), label = "tabScale")
                     Column(
                         Modifier.weight(1f).height(54.dp)
@@ -85,7 +86,7 @@ fun LuminaTabs(
                         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
                     ) {
                         Icon(icons[i], null, tint = tint, modifier = Modifier.size(24.dp).scale2(scale))
-                        Text(label, style = MaterialTheme.typography.labelSmall, color = tint, maxLines = 1, overflow = TextOverflow.Clip, softWrap = false)
+                        Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = tint, maxLines = 1, overflow = TextOverflow.Clip, softWrap = false)
                     }
                 }
             }
@@ -121,13 +122,14 @@ fun LuminaButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
     val pressed by source.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.96f else 1f, motion(Springs.bouncy()), label = "btn")
     Box(
-        modifier.scale2(scale).clip(RoundedCornerShape(10.dp))
-            .background(if (filled) c.primary else c.primary.copy(alpha = 0.14f))
+        modifier.scale2(scale).clip(TakumiCut(10.dp))
+            .background(if (filled) c.primary else Color.Transparent)
+            .then(if (filled) Modifier else Modifier.border(1.dp, c.outline))
             .clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick)
             .padding(horizontal = 24.dp, vertical = 15.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, style = MaterialTheme.typography.labelLarge, color = if (filled) c.onPrimary else c.primary)
+        Text(text.uppercase(), style = MaterialTheme.typography.labelLarge, color = if (filled) c.onPrimary else c.onBackground)
     }
 }
 
@@ -139,7 +141,7 @@ fun LuminaPill(text: String, selected: Boolean, modifier: Modifier = Modifier, o
     val c = MaterialTheme.colorScheme
     val bg by animateColorAsState(if (selected) c.primary else c.surfaceVariant, motion(Springs.snappy()), label = "pill")
     Box(
-        modifier.clip(androidx.compose.foundation.shape.CircleShape).background(bg)
+        modifier.clip(TakumiSm).background(bg).border(1.dp, if (selected) c.primary else c.outline, TakumiSm)
             .selectable(selected, role = Role.RadioButton, onClick = onClick).padding(horizontal = 16.dp, vertical = 9.dp),
-    ) { Text(text, style = MaterialTheme.typography.labelLarge, color = if (selected) c.onPrimary else c.onBackground) }
+    ) { Text(text.uppercase(), style = MaterialTheme.typography.labelLarge, color = if (selected) c.onPrimary else c.onBackground) }
 }

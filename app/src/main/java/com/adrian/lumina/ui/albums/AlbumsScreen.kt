@@ -1,6 +1,8 @@
 package com.adrian.lumina.ui.albums
 
 import androidx.compose.foundation.background
+import com.adrian.lumina.ui.theme.TakumiCut
+import com.adrian.lumina.ui.theme.TakumiSm
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.WindowInsets
@@ -24,7 +26,6 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.ui.draw.drawWithContent
 import com.adrian.lumina.ui.components.Hairline
 import com.adrian.lumina.ui.components.ScreenTitle
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Favorite
@@ -109,7 +110,7 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.section(
     item(span = { GridItemSpan(maxLineSpan) }, key = "h-$title") {
         Column(Modifier.padding(top = 18.dp)) {
             Row(verticalAlignment = Alignment.Bottom) {
-                Box(Modifier.size(5.dp, 24.dp).clip(androidx.compose.foundation.shape.CircleShape).background(MaterialTheme.colorScheme.primary))
+                Box(Modifier.size(5.dp, 24.dp).clip(TakumiSm).background(MaterialTheme.colorScheme.primary))
                 Text(stringResource(title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(start = 10.dp).weight(1f))
                 Text("%02d".format(cards.size), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

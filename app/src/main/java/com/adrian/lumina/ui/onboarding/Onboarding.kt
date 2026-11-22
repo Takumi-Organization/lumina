@@ -1,6 +1,8 @@
 package com.adrian.lumina.ui.onboarding
 
 import androidx.compose.animation.core.animateFloatAsState
+import com.adrian.lumina.ui.theme.TakumiCut
+import com.adrian.lumina.ui.theme.TakumiSm
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -44,7 +46,6 @@ import com.adrian.lumina.R
 import com.adrian.lumina.ui.components.LuminaButton
 import com.adrian.lumina.ui.theme.LocalAnimationsEnabled
 import com.adrian.lumina.ui.theme.Springs
-import com.adrian.lumina.ui.theme.SquircleShape
 
 /**
  * Primera pantalla (permiso de acceso). Un resplandor radial de acento (el único degradado de la app, sutil y detrás
@@ -57,18 +58,10 @@ fun Onboarding(onGrant: () -> Unit, onSettings: () -> Unit, modifier: Modifier =
     var shown by remember { mutableStateOf(!animate) }
     LaunchedEffect(Unit) { shown = true }
     Box(modifier.fillMaxSize().background(c.background)) {
-        Canvas(Modifier.fillMaxSize()) {
-            drawRect(
-                Brush.radialGradient(
-                    listOf(c.primary.copy(alpha = 0.30f), c.primary.copy(alpha = 0.08f), Color.Transparent),
-                    center = Offset(size.width * 0.5f, 0f), radius = size.width * 1.1f,
-                ),
-            )
-        }
         Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 28.dp, vertical = 24.dp)) {
             Spacer(Modifier.height(56.dp))
             Rise(shown, 0) {
-                Box(Modifier.size(72.dp).clip(SquircleShape(20.dp)).background(c.primary), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(72.dp).clip(TakumiCut(20.dp)).background(c.primary), contentAlignment = Alignment.Center) {
                     Aperture(c.onPrimary)
                 }
             }
@@ -117,7 +110,7 @@ private fun produceDelay(visible: Boolean, ms: Long) = androidx.compose.runtime.
 @Composable
 private fun Feature(icon: ImageVector, title: String, text: String) {
     Row(verticalAlignment = Alignment.Top) {
-        Box(Modifier.size(48.dp).clip(SquircleShape(14.dp)).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(48.dp).clip(TakumiCut(14.dp)).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)), contentAlignment = Alignment.Center) {
             Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(26.dp))
         }
         Column(Modifier.padding(start = 16.dp)) {

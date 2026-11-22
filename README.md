@@ -80,7 +80,7 @@ Limitaciones que siguen abiertas (lo único)
 - APK release firmado con la clave de depuración: sirve para probar, no para publicar.
 
 ## Identidad visual: Ryoku Glass (2026-11-19)
-Rediseño sobre la identidad común de Adrián (nota del vault `Estilo visual Ryoku Glass`): neutros fríos (`#0F1115` / `#171A20` / `#232830`; claro `#F4F5F7`), filetes de 1 dp, radios 6-20, solo Inter y un acento elegible (Bermellón, **Oro por defecto**, Lima, Fucsia, Egeo). Los nombres del enum `AccentChoice` se conservan para no perder lo guardado en DataStore (CORAL=Bermellón, MENTA=Lima, ROSA=Fucsia, ZAFIRO=Egeo).
+Identidad **Takumi** (2026-11-22, sustituye a Ryoku Glass): papel negro y tinta `#F2F2F2`, monocromo estricto (sin acento ni cristal), esquinas rectas con corte diagonal arriba a la derecha, Outfit + JetBrains Mono, seleccionado por inversión. Tokens en `takumi-design`. El enum `AccentChoice` se conserva solo por compatibilidad con DataStore; el ajuste de acento ya no existe.
 
 El **cristal** solo se usa en capas flotantes: barra de pestañas, barra superior (título y selección) y controles del visor. `ui/components/Glass.kt` graba el contenido en una `GraphicsLayer` (`glassSource`) y cada superficie `glass(...)` dibuja esa capa desenfocada debajo de su velo; hace falta que la superficie sea hermana del contenido grabado. Con API < 31 (minSdk 30) pasa a opaca. La barra de pestañas ahora flota sobre el contenido; las listas suman `LocalBottomInset` a su relleno inferior.
 

@@ -1,6 +1,8 @@
 package com.adrian.lumina.ui.settings
 
 import androidx.compose.animation.animateColorAsState
+import com.adrian.lumina.ui.theme.TakumiCut
+import com.adrian.lumina.ui.theme.TakumiSm
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,7 +23,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -53,7 +54,6 @@ import com.adrian.lumina.ui.components.ScreenTitle
 import com.adrian.lumina.ui.theme.LocalDark
 import com.adrian.lumina.ui.theme.Springs
 import com.adrian.lumina.ui.theme.motion
-import com.adrian.lumina.ui.theme.SquircleShape
 import com.adrian.lumina.ui.theme.color
 
 /** Ajustes con listas agrupadas de esquinas continuas, interruptores con muelle y acento elegible. */
@@ -75,7 +75,6 @@ fun SettingsScreen(
         ) {
             Section(R.string.set_appearance) {
                 Row2 { Choice(R.string.set_theme, ThemeMode.entries, settings.theme, { stringResource(themeRes(it)) }, "theme") { v -> onChange { it.copy(theme = v) } } }
-                Row2 { AccentPicker(settings.accent) { v -> onChange { it.copy(accent = v) } } }
                 Row2 { Toggle(R.string.set_animations, settings.animations, "animations") { v -> onChange { it.copy(animations = v) } } }
                 Row2(last = true) { Toggle(R.string.set_haptics, settings.haptics, "haptics") { v -> onChange { it.copy(haptics = v) } } }
             }
@@ -87,10 +86,10 @@ fun SettingsScreen(
                             settings.defaultColumns.toFloat(), { v -> onChange { it.copy(defaultColumns = v.toInt()) } },
                             valueRange = 2f..7f, steps = 4, modifier = Modifier.testTag("set-columns"),
                             colors = SliderDefaults.colors(
-                                thumbColor = Color.White, activeTrackColor = MaterialTheme.colorScheme.primary,
+                                thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.primary,
                                 inactiveTrackColor = MaterialTheme.colorScheme.outline, activeTickColor = Color.Transparent, inactiveTickColor = Color.Transparent,
                             ),
-                            thumb = { Box(Modifier.size(28.dp).shadow(4.dp, CircleShape).clip(CircleShape).background(Color.White)) },
+                            thumb = { Box(Modifier.size(20.dp).clip(TakumiSm).background(MaterialTheme.colorScheme.primary)) },
                         )
                     }
                 }
@@ -131,17 +130,13 @@ fun SettingsScreen(
 
 private fun themeRes(t: ThemeMode) = when (t) { ThemeMode.SYSTEM -> R.string.theme_system; ThemeMode.LIGHT -> R.string.theme_light; ThemeMode.DARK -> R.string.theme_dark }
 private fun qualityRes(q: ThumbQuality) = when (q) { ThumbQuality.LOW -> R.string.quality_low; ThumbQuality.NORMAL -> R.string.quality_normal; ThumbQuality.HIGH -> R.string.quality_high }
-private fun accentRes(a: AccentChoice) = when (a) {
-    AccentChoice.CORAL -> R.string.accent_coral; AccentChoice.ORO -> R.string.accent_oro; AccentChoice.MENTA -> R.string.accent_menta
-    AccentChoice.ROSA -> R.string.accent_rosa; AccentChoice.ZAFIRO -> R.string.accent_zafiro
-}
 
 /** Sección agrupada: título pequeño en gris, tarjeta de esquinas continuas y pie opcional. */
 @Composable
 private fun Section(title: Int, footer: String? = null, content: @Composable () -> Unit) {
     Column(Modifier.padding(top = 14.dp)) {
-        Text(stringResource(title), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 16.dp, bottom = 6.dp))
-        Column(Modifier.fillMaxWidth().clip(SquircleShape(20.dp)).background(MaterialTheme.colorScheme.surface)) { content() }
+        Text(stringResource(title).uppercase(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 16.dp, bottom = 6.dp))
+        Column(Modifier.fillMaxWidth().clip(TakumiCut(22.dp)).background(MaterialTheme.colorScheme.surface).border(1.dp, MaterialTheme.colorScheme.outline, TakumiCut(22.dp))) { content() }
         if (footer != null) Text(footer, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 6.dp))
     }
 }
@@ -158,15 +153,15 @@ private fun Row2(last: Boolean = false, content: @Composable () -> Unit) {
 @Composable
 private fun Toggle(label: Int, value: Boolean, tag: String, onChange: (Boolean) -> Unit) {
     val c = MaterialTheme.colorScheme
-    val track by animateColorAsState(if (value) c.primary else c.outline, motion(Springs.snappy()), label = "track")
+    val track by animateColorAsState(if (value) c.primary else c.surfaceVariant, motion(Springs.snappy()), label = "track")
     val knob by animateDpAsState(if (value) 22.dp else 0.dp, motion(Springs.bouncy()), label = "knob")
     Row(
         Modifier.fillMaxWidth().toggleable(value, role = Role.Switch, onValueChange = onChange).testTag("set-$tag"),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(stringResource(label), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        Box(Modifier.size(52.dp, 32.dp).clip(CircleShape).background(track).padding(3.dp)) {
-            Box(Modifier.offset(x = knob).size(26.dp).shadow(3.dp, CircleShape).clip(CircleShape).background(Color.White))
+        Box(Modifier.size(52.dp, 32.dp).clip(TakumiSm).background(track).border(1.dp, c.outline, TakumiSm).padding(3.dp)) {
+            Box(Modifier.offset(x = knob).size(26.dp).clip(TakumiSm).background(if (value) c.onPrimary else c.onSurfaceVariant))
         }
     }
 }
@@ -186,29 +181,7 @@ private fun Pill(text: String, selected: Boolean, modifier: Modifier = Modifier,
     val c = MaterialTheme.colorScheme
     val bg by animateColorAsState(if (selected) c.primary else c.surfaceVariant, motion(Springs.snappy()), label = "pill")
     Box(
-        modifier.clip(CircleShape).background(bg).selectable(selected, role = Role.RadioButton, onClick = onClick)
+        modifier.clip(TakumiSm).background(bg).border(1.dp, if (selected) c.primary else c.outline, TakumiSm).selectable(selected, role = Role.RadioButton, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 9.dp),
-    ) { Text(text, style = MaterialTheme.typography.labelLarge, color = if (selected) c.onPrimary else c.onBackground) }
-}
-
-/** Selector de acento: círculos de color; el elegido lleva un anillo que se dibuja con muelle. */
-@Composable
-private fun AccentPicker(current: AccentChoice, onPick: (AccentChoice) -> Unit) {
-    val dark = LocalDark.current
-    Column {
-        Text(stringResource(R.string.set_accent), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(bottom = 10.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            AccentChoice.entries.forEach { a ->
-                val on = a == current
-                val ring by animateDpAsState(if (on) 3.dp else 0.dp, motion(Springs.bouncy()), label = "ring")
-                Column(
-                    Modifier.selectable(on, role = Role.RadioButton, onClick = { onPick(a) }).testTag("set-accent-$a"),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Box(Modifier.size(52.dp).border(ring, MaterialTheme.colorScheme.onBackground, CircleShape).padding(5.dp).clip(CircleShape).background(a.color(dark)))
-                    Text(stringResource(accentRes(a)), style = MaterialTheme.typography.labelSmall, color = if (on) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
-                }
-            }
-        }
-    }
+    ) { Text(text.uppercase(), style = MaterialTheme.typography.labelLarge, color = if (selected) c.onPrimary else c.onBackground) }
 }

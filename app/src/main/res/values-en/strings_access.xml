@@ -7,12 +7,6 @@
     <string name="access_partial_title">You only see part of your library</string>
     <string name="access_partial_body">You granted access to selected photos or to only one media type. Grant full access to see everything.</string>
     <string name="access_grant_all">Grant full access</string>
-    <string name="set_accent">Accent color</string>
-    <string name="accent_coral">Vermilion</string>
-    <string name="accent_oro">Gold</string>
-    <string name="accent_menta">Lime</string>
-    <string name="accent_rosa">Fuchsia</string>
-    <string name="accent_zafiro">Aegean</string>
     <string name="onb_title">Welcome to Lumina</string>
     <string name="onb_1_t">Private by design</string>
     <string name="onb_1">Your photos and videos stay on the device. Nothing is uploaded.</string>

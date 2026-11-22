@@ -1,6 +1,8 @@
 package com.adrian.lumina.ui.components
 
 import androidx.compose.foundation.background
+import com.adrian.lumina.ui.theme.TakumiCut
+import com.adrian.lumina.ui.theme.TakumiSm
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.adrian.lumina.ui.theme.SquircleShape
 
 /** Estado vacío: icono en una baldosa de esquinas continuas teñida de acento, titular claro y acciones. */
 @Composable
@@ -35,7 +36,7 @@ fun EmptyState(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(Modifier.size(96.dp).clip(SquircleShape(26.dp)).background(accent.copy(alpha = 0.14f)), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(96.dp).clip(TakumiCut(26.dp)).background(accent.copy(alpha = 0.14f)), contentAlignment = Alignment.Center) {
             Icon(Icons.Outlined.PhotoLibrary, null, tint = accent, modifier = Modifier.size(44.dp))
         }
         Spacer(Modifier.height(24.dp))

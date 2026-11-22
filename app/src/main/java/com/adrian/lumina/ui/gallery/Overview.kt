@@ -1,6 +1,8 @@
 package com.adrian.lumina.ui.gallery
 
 import androidx.compose.foundation.background
+import com.adrian.lumina.ui.theme.TakumiCut
+import com.adrian.lumina.ui.theme.TakumiSm
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,7 +36,6 @@ import com.adrian.lumina.R
 import com.adrian.lumina.data.media.Thumb
 import com.adrian.lumina.domain.usecase.MonthOverview
 import com.adrian.lumina.domain.usecase.YearOverview
-import com.adrian.lumina.ui.theme.SquircleShape
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -44,7 +45,7 @@ fun YearsView(years: List<YearOverview>, pad: PaddingValues, onYear: (YearOvervi
     LazyColumn(modifier.fillMaxSize().navigationBarsPadding(), contentPadding = pad, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         items(years, key = { it.year }) { y ->
             Box(
-                Modifier.padding(horizontal = 14.dp).fillMaxWidth().aspectRatio(1.35f).clip(SquircleShape(24.dp))
+                Modifier.padding(horizontal = 14.dp).fillMaxWidth().aspectRatio(1.35f).clip(TakumiCut(24.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant).clickable { onYear(y) }.testTag("year-${y.year}"),
             ) {
                 AsyncImage(Thumb(y.cover.uri, 640), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
@@ -76,7 +77,7 @@ fun MonthsView(years: List<YearOverview>, pad: PaddingValues, onMonth: (MonthOve
             items(y.months, key = { "m-${it.month}" }) { m ->
                 val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
                 Box(
-                    Modifier.padding(horizontal = if (false) 0.dp else 0.dp).fillMaxWidth().aspectRatio(1f).clip(SquircleShape(20.dp))
+                    Modifier.padding(horizontal = if (false) 0.dp else 0.dp).fillMaxWidth().aspectRatio(1f).clip(TakumiCut(20.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant).clickable { onMonth(m) }.testTag("month-${m.month}"),
                 ) {
                     AsyncImage(Thumb(m.cover.uri, 320), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)

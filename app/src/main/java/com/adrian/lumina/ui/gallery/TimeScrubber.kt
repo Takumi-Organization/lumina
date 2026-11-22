@@ -1,6 +1,8 @@
 package com.adrian.lumina.ui.gallery
 
 import androidx.compose.animation.core.animateFloatAsState
+import com.adrian.lumina.ui.theme.TakumiCut
+import com.adrian.lumina.ui.theme.TakumiSm
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
@@ -108,7 +110,7 @@ fun TimeScrubber(timeline: Timeline, list: LazyListState, modifier: Modifier = M
                         modifier = Modifier.align(Alignment.TopEnd)
                             .wrapContentWidth(Alignment.End, unbounded = true)
                             .offset { IntOffset(-with(density) { 14.dp.roundToPx() }, (y - with(density) { 8.dp.toPx() }).roundToInt()) }
-                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .clip(TakumiSm)
                             .background(glass())
                             .padding(horizontal = 7.dp, vertical = 2.dp),
                     )
@@ -118,7 +120,7 @@ fun TimeScrubber(timeline: Timeline, list: LazyListState, modifier: Modifier = M
                 Modifier.align(Alignment.TopEnd)
                     .offset { IntOffset(0, (fraction * usable).roundToInt()) }
                     .padding(end = 3.dp).width(5.dp).height(thumbH)
-                    .clip(androidx.compose.foundation.shape.CircleShape)
+                    .clip(TakumiSm)
                     .background(MaterialTheme.colorScheme.primary),
             )
         }
@@ -135,8 +137,7 @@ private fun MonthPoster(month: YearMonth, modifier: Modifier) {
     val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
     Column(
         modifier.wrapContentWidth(Alignment.End, unbounded = true).offset(x = (-28).dp)
-            .shadow(20.dp, com.adrian.lumina.ui.theme.SquircleShape(18.dp))
-            .clip(com.adrian.lumina.ui.theme.SquircleShape(18.dp)).background(MaterialTheme.colorScheme.primary)
+            .clip(TakumiCut(18.dp)).background(MaterialTheme.colorScheme.primary)
             .padding(horizontal = 18.dp, vertical = 8.dp).testTag("scrubber-bubble"),
         horizontalAlignment = Alignment.End,
     ) {
