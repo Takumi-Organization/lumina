@@ -1,87 +1,86 @@
 # Lumina
 
-Galería multimedia para Android (Kotlin, Compose, MVVM). Diseño y fases: [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
+Galería multimedia para Android (Kotlin, Jetpack Compose, MVVM): biblioteca cronológica, álbumes, visor con vídeo, editor no destructivo y búsqueda por metadatos. Todo se queda en el dispositivo.
 
-## Estado
-- Fase 1: cuadrícula cronológica por días desde MediaStore, miniaturas del sistema, skeleton, estados vacío/sin permiso.
-- Fase 2: scrubber temporal (mes/año), selección múltiple (pulsación larga, «elegir día»), favoritos locales + filtro, pellizco para 2–7 columnas, textos en es/en.
-- Fase 3: visor (paginador, zoom con pellizco/doble toque, transición compartida, controles que se ocultan, información EXIF y ubicación, compartir, papelera del sistema, favoritos). Vídeo: póster + reproductor del sistema (provisional hasta la fase 4).
-- Fase 4: vídeo integrado (Media3 ExoPlayer): reproducir/pausa, progreso, volumen/silencio, doble toque ±10 s, girar a horizontal (modo inmersivo).
-- Fase 5: álbumes. Manuales (Room v2, migración 1→2): crear/editar nombre y descripción, portada, favoritos, ocultos, añadir desde la selección, quitar, reordenar y orden Manual/fecha/nombre. Automáticos (recientes, cámara, capturas, descargas, fotos, vídeos, favoritas) y carpetas del dispositivo. Pestañas Biblioteca/Álbumes.
-- Fase 6: editor no destructivo (desde el visor, solo imágenes): exposición, contraste, saturación, temperatura, sombras, luces, nitidez, viñeta; recorte libre con agarres (o por proporción), giro 90° y espejo; deshacer/rehacer, restablecer, comparar con el original (mantener pulsado) y guardar copia en Pictures/Lumina con el EXIF del original (nunca sobrescribe). Vista previa y exportación comparten el mismo pipeline en CPU (`PixelImage`), exportación hasta 4096 px de lado mayor.
-- Fase 7: búsqueda por metadatos (nombre, carpeta, tipo, mes, año, favoritas, capturas; sin acentos, es/en) tras la interfaz `SearchProvider`. No hay reconocimiento de imagen: un futuro proveedor se enchufaría sin tocar la UI.
-- Fase 8: ajustes (DataStore): tema, animaciones (y escala de animación del sistema), vibración háptica, columnas por defecto, calidad de miniaturas, orden por defecto de álbumes, autoplay de vídeo, proteger pantalla (FLAG_SECURE), resumen de almacenamiento y vaciar caché de miniaturas.
+| Biblioteca | Por días | Visor | Álbumes |
+|---|---|---|---|
+| ![Biblioteca](docs/capturas/01-biblioteca.png) | ![Por días](docs/capturas/02-dias.png) | ![Visor](docs/capturas/03-visor.png) | ![Álbumes](docs/capturas/04-albumes.png) |
 
-- Fase 9: APK release (R8 + recursos reducidos) firmado con la clave de depuración, mediciones de dominio y de lista grande, corrección de errores de lint (opt-in de Media3, configuración en composables).
-- Fase 10: dirección visual Obsidiana/Marfil (Inter, esquinas continuas, barra flotante, mosaico editorial con meses gigantes), respeto a «reducir animaciones» y verificación en móvil físico.
+| Búsqueda | Ajustes | Editor | Selección |
+|---|---|---|---|
+| ![Búsqueda](docs/capturas/05-busqueda.png) | ![Ajustes](docs/capturas/06-ajustes.png) | ![Editor](docs/capturas/07-editor.png) | ![Selección](docs/capturas/08-seleccion.png) |
 
-Pruebas: `./gradlew :app:testDebugUnitTest` y, con emulador, `ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest` (fijar el serial: si hay un móvil conectado, Gradle intenta instalar también ahí).
+Capturas reales (`adb screencap`) de la app release corriendo en un emulador Pixel_API36 (Android 16) con fotos y vídeos sintéticos generados con `tools/seed-media.py`; no contienen datos personales.
 
-## Probar
+## Características
+
+- **Biblioteca** cronológica por días desde MediaStore, con meses/años gigantes, scrubber temporal, selección múltiple (pulsación larga, «elegir día»), favoritos locales y pellizco para 2–7 columnas.
+- **Visor**: paginador, zoom con pellizco y doble toque, transición compartida, información EXIF y ubicación, compartir, papelera del sistema y favoritos.
+- **Vídeo** integrado con Media3 ExoPlayer: reproducir/pausa, progreso, volumen, doble toque ±10 s y giro a horizontal en modo inmersivo.
+- **Álbumes**: manuales (Room, con migración 1→2: nombre, descripción, portada, ocultos, reordenar y orden Manual/fecha/nombre), automáticos (recientes, cámara, capturas, descargas, fotos, vídeos, favoritas) y carpetas del dispositivo.
+- **Editor no destructivo** (imágenes): exposición, contraste, saturación, temperatura, sombras, luces, nitidez y viñeta; recorte libre o por proporción, giro 90° y espejo; deshacer/rehacer, comparar con el original (mantener pulsado) y guardar copia en `Pictures/Lumina` conservando el EXIF (nunca sobrescribe el original).
+- **Búsqueda por metadatos** (nombre, carpeta, tipo, mes, año, favoritas, capturas; sin acentos, es/en). No hay reconocimiento de imagen.
+- **Ajustes** (DataStore): tema, animaciones, vibración, columnas, calidad de miniaturas, orden de álbumes, autoplay y «proteger pantalla» (`FLAG_SECURE`).
+- Interfaz en español e inglés.
+
+## Instalación
+
+Descarga `lumina-0.1.0.apk` de la [última release](../../releases/latest) y comprueba el `sha256` publicado junto a él:
+
 ```
-./gradlew :app:testDebugUnitTest :app:assembleDebug
-emulator -avd Pixel_API36 -read-only -port 5556 -no-window &   # propio, para no pisar otras sesiones
-python3 tools/seed-media.py emulator-5556 120   # siembra fotos/vídeos sintéticos (solo emulador)
-adb -s emulator-5556 install -r app/build/outputs/apk/debug/app-debug.apk
+sha256sum -c lumina-0.1.0.apk.sha256
+adb install -r lumina-0.1.0.apk
 ```
 
-## Importación de la biblioteca y diagnóstico (2026-11-14)
+> **Aviso:** el APK está **firmado con la clave de depuración** de Android. Sirve para probar la app; no es una firma de producción, no pasa por Play Store ni Play Protect y Android puede avisar al instalarlo. Requiere Android 11 (API 30) o superior.
 
-Síntoma reportado en un Xiaomi: Lumina no muestra ningún archivo. Causas revisadas y qué se hizo:
-- **Estado de permisos mal detectado.** Antes cualquier permiso (incluido «fotos seleccionadas» de Android 14+, o solo fotos sin vídeos) contaba como acceso y no se recalculaba al volver de los ajustes del sistema. Ahora `mediaAccess()` distingue NINGUNO / PARCIAL / COMPLETO, se recalcula en cada `onResume` y, si cambia, se vuelve a leer MediaStore. Con acceso parcial hay un aviso en la biblioteca con «Dar acceso a todo» (pide los permisos y, si Android ya no muestra el diálogo, abre los ajustes de la app).
-- **Consulta que falla en silencio.** La lectura usaba solo la colección de Archivos del volumen `external` con una sola proyección: una columna rechazada o una excepción dejaba la lista vacía sin explicación. Ahora se consulta Imágenes y Vídeo (volumen `external`, luego `external_primary`) y, si siguen vacías, Archivos incluyendo filas sin clasificar cuyo MIME es de imagen o vídeo; ante `IllegalArgumentException` se reintenta con columnas mínimas; las columnas ausentes no tumban la lectura.
-- **Fallo visible.** Cualquier excepción o resultado vacío queda en `MediaRepository.status` (con el recuento por fuente) y la biblioteca lo muestra («No se pudo leer tu biblioteca…» o «Lectura de MediaStore: external/imágenes=0; …») con «Reintentar» y «Ajustes de permisos». Además hay log con etiqueta `LuminaMedia` (`adb logcat -s LuminaMedia`), que dice cuántos elementos dio cada fuente y la excepción si la hubo.
-- **Observador.** Una sola suscripción a toda la autoridad de MediaStore (`content://media`, con descendientes) y relectura al volver a la app; antes solo escuchaba la colección de Archivos.
-- Por diseño no aparecen: carpetas con `.nomedia`, archivos `IS_PENDING`, elementos en la papelera, perfiles de trabajo/otros usuarios, y cualquier archivo que MediaStore no indexe (Lumina no recorre el sistema de archivos).
+## Permisos
 
-Verificación de este cambio: tests JVM de `mediaAccess()` y clasificación por MIME (en verde), `lintDebug` y `assembleDebug` sin errores. `ImportCoverageTest` (inserta PNG/WebP/GIF/HEIC/DNG/BMP, MP4/WebM/MKV/3GP, por Imágenes, Vídeo, Descargas y Archivos, y comprueba que salen en la biblioteca) y `LibraryDiagnosticsTest` (excepciones visibles, proyección mínima, cursor nulo, reintento tras conceder permiso, pantallas de error/vacío). Son instrumentados (`connectedDebugAndroidTest`); en el móvil, `adb logcat -s LuminaMedia` tras abrir la app. Su ejecución consta en la sección «Verificación» (34 tests instrumentados en verde).
+| Permiso | Para qué |
+|---|---|
+| `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO` | Leer las fotos y vídeos de MediaStore |
+| `READ_MEDIA_VISUAL_USER_SELECTED` | Acceso parcial («fotos seleccionadas») en Android 14+ |
+| `READ_EXTERNAL_STORAGE` (hasta API 32) | Lo mismo en versiones anteriores a Android 13 |
+| `ACCESS_MEDIA_LOCATION` | Mostrar la ubicación guardada en el EXIF |
 
-## Verificación (2026-11-14)
+## Compilar desde el código
 
-Todo lo siguiente se ejecutó en el emulador compartido `emulator-5554` (Pixel_API36, Android 16), en JVM y, para cerrar esta fase, en el móvil físico de Adrián (`78af40b4`, 1280×2772) con el APK release instalado con `install -r` (los datos se conservan).
+Requisitos: JDK 17 o superior (el proyecto compila a Java 17; verificado con JDK 27), Android SDK con la plataforma 37 (`compileSdk 37`, `targetSdk 36`, `minSdk 30`) y el Gradle wrapper incluido (Gradle 9.8.1, AGP 9.4.1, Kotlin 2.4.21).
 
-Tests automáticos
-- `testDebugUnitTest`: 129 tests JVM (recuento 2026-11-15) (dominio, líneas de tiempo, álbumes y `AlbumsViewModel` con repositorios falsos —crear, añadir, reordenar, portada, quitar, ocultar, eliminar—, búsqueda, píxeles del editor, geometría del recorte libre, deshacer/rehacer, DataStore sobre archivo real, almacenamiento, rendimiento de dominio).
-- `connectedDebugAndroidTest`: 34 tests instrumentados en verde: Room y migración 1→2 contra `schemas/2.json`, pantallas de galería/visor/vídeo/álbumes/búsqueda/ajustes, tema (animaciones/háptico/calidad de miniatura), editor completo con imagen real (recorte arrastrando una esquina, deshacer), guardado real de copia en `Pictures/Lumina` con dimensiones correctas, original intacto y **EXIF conservado** (marca, modelo, fecha; orientación normalizada).
-- `assembleDebug`, `assembleRelease` (R8) y `lintDebug` sin errores; `apksigner verify` OK.
+```
+./gradlew :app:assembleDebug      # app/build/outputs/apk/debug/
+./gradlew :app:assembleRelease    # R8 + recursos reducidos, firmado con la clave de depuración
+```
 
-Recorrido real en pantalla (capturas con `screencap`, interacción con `input`)
-- Biblioteca, Álbumes, Búsqueda y Ajustes en tema claro y oscuro; permisos; crear un álbum, añadir fotos desde la selección, abrir su detalle, reordenar («mover después»), poner portada (la tarjeta cambia de miniatura), ocultar el álbum (desaparece de la lista) y mostrarlo con el ojo de «mostrar ocultos».
-- Editor: sliders (exposición, saturación, temperatura), pestaña de recorte, giro, espejo, deshacer, rehacer, mantener pulsado para comparar con el original y guardar copia (archivo creado en `Pictures/Lumina`).
-- Vídeo (fase 4): reproducción hasta «Repetir» y giro a horizontal con modo inmersivo; el vídeo ocupa la pantalla.
-- **APK release (R8) ejecutado**: arranca, lista 10 128 elementos reales con miniaturas; Room, DataStore, búsqueda, ajustes y reproducción de vídeo funcionan sin excepciones ni reglas de keep adicionales.
-- «Proteger pantalla»: con el ajuste activo `screencap` devuelve negro (FLAG_SECURE efectivo); desactivado, normal.
+Para ver la app con datos de demostración en un emulador (nunca en un móvil real):
 
-Móvil físico (Xiaomi `78af40b4`, APK release, 7 382 elementos reales)
-- Biblioteca real: 7 382 elementos (6 599 imágenes + 783 vídeos, 89,8 GB) leídos de MediaStore ~350 ms después del primer frame; cuadrícula, meses/años, álbumes, búsqueda y ajustes responden con miniaturas reales.
-- Arranque en frío con `am start -W` (3 medidas): 199/208/231 ms, por debajo del objetivo de 500 ms. El APK debug tarda ~700 ms, así que las cifras de rendimiento se toman siempre en release.
-- Desplazamiento: 10 deslizamientos rápidos de punta a punta, `dumpsys gfxinfo`: 794 frames, 1 lento (0,13 %), percentiles 50/90/95/99 = 10/11/12/20 ms, 0 vsync perdidos.
-- Capturas reales en `docs/capturas/phone-*.png` (claro y oscuro: biblioteca, álbumes, búsqueda, apariencia, ajustes y visor).
-- «Proteger pantalla» comprobado en el móvil: activo, `screencap` devuelve negro (FLAG_SECURE); desactivado, captura normal. Se dejó activado, como estaba.
+```
+emulator -avd Pixel_API36 -read-only -no-snapshot &
+python3 tools/seed-media.py emulator-5554 120   # siembra fotos y vídeos sintéticos
+adb -s emulator-5554 install -r app/build/outputs/apk/release/app-release.apk
+```
 
-Defectos encontrados y corregidos al verlo en pantalla
-- Texto negro sobre fondo oscuro (faltaba `Surface` en el tema) y esquema de color M3 incompleto (barra de navegación y chips lavanda).
-- La cabecera de «Mis álbumes» quedaba bajo la barra de título (no contaba el inset de estado).
-- El arrastre del recorte aplicaba solo el último delta (estado obsoleto entre eventos): ahora acumula.
-- Salir del visor tras «girar» un vídeo dejaba toda la app en horizontal: se restablece la orientación al cerrar.
-- Los interruptores de ajustes solo respondían al pulsar el propio interruptor (ahora toda la fila) y apagados no se veían.
-- «Reducir animaciones» no llegaba a todos los muelles: ahora `motion()` los convierte en `snap` (pestañas, botones, cambios de nivel, interruptores y selector de acento) cuando el ajuste está apagado o la escala del sistema es 0.
+## Pruebas
 
-Rendimiento (emulador, APK release, **10 128 imágenes reales** de 480×360 sembradas con `tools/seed-perf.py`, miniaturas incluidas)
-- 25 deslizamientos rápidos de punta a punta en la biblioteca, `dumpsys gfxinfo`: 1,71 % de frames lentos (15 de ≈ 880); percentiles de frame 50/90/95/99 = 8/16/16/18 ms (límite de 16,6 ms a 60 Hz); GPU 7/15/16/16 ms; 0 vsync perdidos. Memoria: Java heap ≈ 20 MB, Native ≈ 160 MB.
-- Dominio en JVM con 50 000 elementos: línea de tiempo 7 ms, resumen de álbumes 12 ms, búsqueda 25 ms; editor completo sobre 12 MP ≈ 1,0 s.
-- Son cifras del emulador (GPU/CPU emuladas): sirven para comparar versiones, no para prometer fluidez en un móvil concreto.
+```
+./gradlew :app:testDebugUnitTest                                              # JVM
+ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest         # instrumentadas, con emulador
+```
 
-Limitaciones que siguen abiertas (lo único)
-- **Móvil físico**: verificado en el Xiaomi de Adrián (arranque, biblioteca real, capturas y FLAG_SECURE). Quedan sin probar otros fabricantes y la sincronización con otras apps; el desplazamiento se midió con `gfxinfo`, no con un perfil de Android Studio.
-- Ajustes: la escala de animación del sistema y la «calidad» de miniaturas solo están comprobadas hasta el punto de que el tema las expone a la UI (test instrumentado); no se observó el efecto a ojo.
-- Editor: vista previa en CPU a 1280 px; exportación hasta 4096 px de lado mayor (`largeHeap`); no se conserva EXIF en copias PNG.
-- Álbumes ocultos: solo se ocultan de la lista (las fotos siguen en la biblioteca); favoritos y álbumes son locales a Lumina (Room) y no se sincronizan con otras apps.
-- APK release firmado con la clave de depuración: sirve para probar, no para publicar.
+Fija siempre el serial: si hay un móvil conectado, Gradle intenta instalar también ahí. Los resultados de verificación anteriores (tests, rendimiento, recorridos en pantalla) están en [docs/NOTAS-TECNICAS.md](docs/NOTAS-TECNICAS.md); el diseño, en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md). Estas pruebas no se han vuelto a ejecutar al preparar esta publicación; sí se compiló la release y se comprobó que instala y arranca sin errores en el emulador.
 
-## Identidad visual: Ryoku Glass (2026-11-19)
-Identidad **Takumi** (2026-11-22, sustituye a Ryoku Glass): papel negro y tinta `#F2F2F2`, monocromo estricto (sin acento ni cristal), esquinas rectas con corte diagonal arriba a la derecha, Outfit + JetBrains Mono, seleccionado por inversión. Tokens en `takumi-design`. El enum `AccentChoice` se conserva solo por compatibilidad con DataStore; el ajuste de acento ya no existe.
+## Identidad visual
 
-El **cristal** solo se usa en capas flotantes: barra de pestañas, barra superior (título y selección) y controles del visor. `ui/components/Glass.kt` graba el contenido en una `GraphicsLayer` (`glassSource`) y cada superficie `glass(...)` dibuja esa capa desenfocada debajo de su velo; hace falta que la superficie sea hermana del contenido grabado. Con API < 31 (minSdk 30) pasa a opaca. La barra de pestañas ahora flota sobre el contenido; las listas suman `LocalBottomInset` a su relleno inferior.
+Sigue la identidad visual de Takumi-Organization: papel negro y tinta clara, monocromo estricto (sin acento ni cristal), esquinas rectas con corte diagonal arriba a la derecha, selección por inversión. Tipografías **Outfit** y **JetBrains Mono**, bajo licencia SIL OFL 1.1 ([licencias](docs/licencias/)).
 
-Capturas: `docs/capturas/glass-*.png` (emulador Pixel_API36, oscuro + Oro). Sin verificar: móvil físico, modo claro con todas las pantallas, fluidez del desenfoque al desplazarse (solo capturas fijas), el editor y el onboarding (no tocados a propósito: siguen con la paleta nueva pero sin cristal).
+## Estado y límites conocidos
+
+- Verificado en emulador y en un móvil físico (Xiaomi); sin probar en otros fabricantes.
+- Las cifras de rendimiento del emulador sirven para comparar versiones, no para prometer fluidez en un móvil concreto.
+- Editor: vista previa en CPU a 1280 px y exportación hasta 4096 px de lado mayor; no se conserva EXIF en copias PNG.
+- Los álbumes ocultos solo se ocultan de la lista; favoritos y álbumes son locales (Room) y no se sincronizan con otras apps.
+- No aparecen carpetas con `.nomedia`, archivos pendientes, elementos en papelera ni perfiles de trabajo: Lumina solo lee lo que MediaStore indexa.
+
+## Licencia
+
+[MIT](LICENSE), © 2026 Takumi-Organization. Las fuentes Outfit y JetBrains Mono se distribuyen bajo SIL OFL 1.1 (`docs/licencias/`). Las dependencias (AndroidX, Compose, Room, Media3, Coil, Kotlin) son de código abierto con licencia Apache 2.0.
